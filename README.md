@@ -1,85 +1,115 @@
 # Node Agent Assistant
 
-Trợ lý AI hỗ trợ khách hàng GreenNode — pipeline 3 model (qwen điều phối · minimax suy luận · gemma soạn) chạy trên VNG Cloud MaaS, trả lời có trích dẫn [n] và tự dựng biểu đồ từ số liệu thật trong KB.
+AI assistant for GreenNode customers — 3-model pipeline (qwen orchestrates · minimax reasons · gemma writes) running on VNG Cloud MaaS, with cited answers `[n]` and auto-generated charts from real KB data.
 
-## Yêu cầu
+Fully responsive UI (desktop, iPad, mobile). Deployed on VNG Cloud AgentBase via Docker Hub.
+
+## Requirements
 
 - Python 3.12+
-- 1 API key VNG Cloud MaaS (OpenAI-compatible endpoint)
+- VNG Cloud MaaS API key (OpenAI-compatible endpoint)
 
-## Cài đặt (macOS)
+## Setup (macOS)
 
 ```bash
-cd "Node Agent Src"
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-(Tùy chọn) Nếu muốn crawl helpdesk live (render SPA), cài thêm Playwright. Bỏ qua cũng được — app tự fallback về trả lời từ KB:
+Optional — only needed for live helpdesk crawling (SPA rendering). The app falls back to KB-only answers without it:
 
 ```bash
 pip install playwright
 python -m playwright install chromium
 ```
 
-## Cấu hình API key (KHÔNG hardcode trong repo)
+## API Key Configuration
 
-serve.py đọc key MaaS theo thứ tự ưu tiên, in-process, không bao giờ echo ra shell:
+The key is read in-process and never echoed to the shell or committed to the repo.
 
-1. Biến môi trường thật (`export ...`) — luôn ưu tiên cao nhất. Chấp nhận một
-   trong các tên: `NODE_AGENT_API_KEY` > `MAAS_API_KEY` > `AI_PLATFORM_API_KEY` > `API_KEY`
-2. File `.env` ở thư mục dự án (nạp tự động lúc khởi động, KHÔNG ghi đè env thật)
-3. `NODE_AGENT_KEY_FILE=/đường/dẫn/tới/key.txt` (file 1 dòng chứa key)
-4. `~/.node_agent_maas_key` (file local)
-
-Cả `.env`, `*.key`, `*key*.txt`, `Apikey.txt`, `.node_agent_maas_key` đều đã nằm
-trong `.gitignore` — không bao giờ bị commit.
-
-Cách khuyến nghị (gọn nhất, dùng `.env`):
+**Local dev — use `.env`** (recommended):
 
 ```bash
 cp .env.example .env
-# rồi mở .env, dán key MaaS vào dòng NODE_AGENT_API_KEY=
+# open .env and paste your key into NODE_AGENT_API_KEY=
 ```
 
-Hoặc dùng biến môi trường:
+**Production (AgentBase) — environment variable:**
 
-```bash
-export NODE_AGENT_API_KEY="<dán-key-MaaS-vào-đây>"
-```
+Set `NODE_AGENT_API_KEY` directly in the AgentBase dashboard (see Deploy section below).
 
-## Chạy
+`.env` is in `.gitignore` and will never be committed.
+
+## Running
 
 ```bash
 source .venv/bin/activate
 python serve.py --port 8077
 ```
 
-Mở http://127.0.0.1:8077 — token đăng nhập mặc định `demo-key-change-me` (đổi bằng `--token`).
+Open http://127.0.0.1:8077 — default dashboard token is `demo-key-change-me` (override with `--token`).
 
-## Câu hỏi thử (để thấy đủ các loại chart)
+## Sample Questions (to see all chart types)
 
-| Câu hỏi | Chart |
+| Question | Chart |
 |---|---|
-| So sánh VRAM và băng thông H100 với H200 | bar |
-| Xếp hạng giá thuê các dòng GPU GreenNode | hbar |
-| Mức cam kết SLA uptime của GreenNode | gauge 99.99% |
-| Hồ sơ năng lực đa tiêu chí của H100 | radar |
-| Chi phí và sức mạnh của H100 | donut + radar |
+| Compare VRAM and bandwidth of H100 vs H200 | bar |
+| Rank GreenNode GPU rental prices | hbar |
+| GreenNode SLA uptime commitment | gauge 99.99% |
+| H100 multi-criteria capability profile | radar |
+| H100 cost vs performance | donut + radar |
 
-## Cấu trúc câu trả lời
+## Answer Structure
 
-Mỗi câu trả lời theo khung: mở đầu (xác nhận đang giúp gì) → bảng/dữ liệu + biểu đồ (nếu có số liệu phù hợp) → diễn giải ngắn → mời bước tiếp. Bot KHÔNG bịa số: nếu KB không có dữ liệu phù hợp cho 1 loại biểu đồ, nó nói rõ và không vẽ.
+Each answer follows: opening (confirms what it's helping with) → table/data + chart (when KB has matching numbers) → brief analysis → next-step prompt. The bot never fabricates numbers — if the KB has no suitable data for a chart type, it says so and skips the chart.
 
-## Tùy chọn nâng cao
+## Advanced Options
 
-- `--dev-gateway` — dùng gateway nội bộ (đọc từ Hermes config) thay vì MaaS. Chỉ dành cho môi trường dev gốc, không dùng trên máy khác.
-- `--no-llm` — chạy chế độ chỉ truy hồi KB (không gọi LLM).
-- `--model` — đổi model writer mặc định (mặc định `google/gemma-4-31b-it`).
-- Per-seat: đặt `NODE_AGENT_MODEL_ORCHESTRATOR` / `_THINKER` / `_WRITER` để override model từng seat.
+- `--dev-gateway` — use the internal gateway (reads from Hermes config) instead of MaaS. Dev environment only, not for use on other machines.
+- `--no-llm` — KB retrieval-only mode (no LLM calls).
+- `--model` — override the default writer model (default: `google/gemma-4-31b-it`).
+- Per-seat: set `NODE_AGENT_MODEL_ORCHESTRATOR` / `_THINKER` / `_WRITER` to override each seat's model.
 
-## Dữ liệu
+## Deploy (Docker Hub → VNG Cloud AgentBase)
 
-- `data/kb_chunks.jsonl` — KB thật (2716 chunk, crawl từ greennode.ai / vngcloud).
-- File `*.db` (convo / memory / trace) tự sinh khi chạy, đã nằm trong .gitignore.
+### Build and push image
+
+```bash
+# First time: log in to Docker Hub
+docker login
+export DOCKER_USER=your_dockerhub_username
+
+# Each time you want to deploy a new build
+./scripts/build_push.sh          # build + push :latest
+./scripts/build_push.sh v1.1     # also push a pinned version tag
+```
+
+The script builds with `--platform linux/amd64` for compatibility with x86 servers when building on Apple Silicon.
+
+### Pull the new image on AgentBase
+
+Go to **VNG Cloud AgentBase dashboard** → select the service → click **Redeploy** (or **Update image**). AgentBase will pull the latest image from Docker Hub automatically.
+
+Environment variables to configure on AgentBase:
+
+| Variable | Value |
+|---|---|
+| `NODE_AGENT_API_KEY` | VNG MaaS API key |
+| `NODE_AGENT_DASH_TOKEN` | Dashboard login token |
+| `NODE_AGENT_MODEL` | `google/gemma-4-31b-it` (default) |
+
+Container exposes port `8080`, health check at `/health`.
+
+## Responsive UI
+
+The UI is fully responsive across all screen sizes:
+
+- **Desktop** — full layout, conversation sidebar, Harness monitor
+- **iPad (481–1024px)** — compact composer, kanban panel auto-scales to screen width
+- **Mobile (≤ 480px)** — 28px title, dock with `safe-area-inset-bottom` for iPhone home bar, full-width kanban panel anchored to bottom
+
+## Data
+
+- `data/kb_chunks.jsonl` — production KB (2716 chunks, crawled from greennode.ai / vngcloud).
+- `*.db` files (conversations, memory, traces) are auto-generated at runtime and listed in `.gitignore`.

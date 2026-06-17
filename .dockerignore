@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.git/
+.env
+*.key
+*key*.txt
+Apikey.txt
+config.yaml
+data/*.db
+data/kb_smoke.jsonl
+scripts/
+.DS_Store
+.vscode/
+.idea/
+README.md

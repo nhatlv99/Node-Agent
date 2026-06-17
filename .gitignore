@@ -6,7 +6,6 @@
 *key*.txt
 Apikey.txt
 .env
-.env.*
 
 # Hermes config (dev-gateway fallback holds in-house creds)
 config.yaml

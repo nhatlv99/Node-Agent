@@ -98,6 +98,7 @@ class AskRequest(BaseModel):
 
 
 # ── endpoints ────────────────────────────────────────────────────────────────
+@app.get("/health")
 @app.get("/api/health")
 def health() -> dict:
     retr: BM25Retriever = app.state.retriever
@@ -145,14 +146,14 @@ def list_models() -> dict:
 @app.post("/api/ask")
 def ask(req: AskRequest, request: Request) -> dict:
     _check_auth(request)
-    from .modes import get_mode, is_allowed_model, DEFAULT_MODE
+    from .modes import get_mode, is_allowed_model, DEFAULT_MODE, MODES
 
     q = (req.question or "").strip()
     if not q:
         raise HTTPException(status_code=400, detail="empty question")
 
     # Validate mode + model against the registry (reject anything off-list).
-    mode = req.mode if req.mode in {"node_assistant", "trading_agent"} else DEFAULT_MODE
+    mode = req.mode if req.mode in MODES else DEFAULT_MODE
     from .modes import NODE_AGENT_MODEL_ID
     # "node-agent" is the virtual harness id, not a real seat model. On the
     # single-model fallback path it must resolve to None (server default), so the

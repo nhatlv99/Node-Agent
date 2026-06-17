@@ -39,32 +39,6 @@ Supported chart types: bar, horizontal bar, gauge, radar, donut.
 
 ---
 
-## Deployment
-
-The assistant runs on **VNG Cloud AgentBase** and is deployed via Docker Hub.
-
-To ship a new version:
-
-```bash
-export DOCKER_USER=your_dockerhub_username
-./scripts/build_push.sh          # builds and pushes :latest
-./scripts/build_push.sh v1.1     # also tags a pinned version
-```
-
-Then go to **AgentBase dashboard → service → Redeploy** to pull the new image.
-
-Required environment variables on AgentBase:
-
-| Variable | Description |
-|---|---|
-| `NODE_AGENT_API_KEY` | VNG Cloud MaaS API key |
-| `NODE_AGENT_DASH_TOKEN` | Dashboard access token |
-| `NODE_AGENT_MODEL` | Writer model (default: `google/gemma-4-31b-it`) |
-
-Container port: `8080` — health check: `/health`.
-
----
-
 ## Interface
 
 The UI is fully responsive across desktop, iPad, and mobile. A conversation sidebar keeps session history, and a live Harness monitor shows the 3-model pipeline in real time as each answer is generated.

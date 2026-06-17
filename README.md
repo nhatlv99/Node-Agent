@@ -1,115 +1,76 @@
 # Node Agent Assistant
 
-AI assistant for GreenNode customers — 3-model pipeline (qwen orchestrates · minimax reasons · gemma writes) running on VNG Cloud MaaS, with cited answers `[n]` and auto-generated charts from real KB data.
+AI-powered customer support assistant for GreenNode — answers questions about High-Performance Cloud, AI Platform, and Intelligent Automation with cited sources and auto-generated charts.
 
-Fully responsive UI (desktop, iPad, mobile). Deployed on VNG Cloud AgentBase via Docker Hub.
+---
 
-## Requirements
+## The Problem
 
-- Python 3.12+
-- VNG Cloud MaaS API key (OpenAI-compatible endpoint)
+GreenNode's customers — engineers, DevOps teams, and technical decision-makers evaluating cloud infrastructure — frequently need fast, accurate answers about GPU specs, pricing, SLA terms, and platform capabilities. This information is spread across documentation, pricing pages, and product guides, making it time-consuming to find and easy to misinterpret.
 
-## Setup (macOS)
+Support teams face repetitive queries that slow down response times, while customers face delays when they need to make procurement or architecture decisions quickly.
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
+## Who It's For
 
-Optional — only needed for live helpdesk crawling (SPA rendering). The app falls back to KB-only answers without it:
+- **Technical evaluators** comparing GreenNode GPU instances, AI Platform features, or automation services against alternatives
+- **Existing customers** looking up SLA commitments, model availability, or billing details without opening a ticket
+- **GreenNode support staff** who need a consistent, source-backed reference to handle inquiries faster
 
-```bash
-pip install playwright
-python -m playwright install chromium
-```
+## Value Delivered
 
-## API Key Configuration
+- **Instant, cited answers** — every response references the exact KB source, so users can verify claims rather than take them on faith
+- **Data made visual** — numerical comparisons (pricing, VRAM, bandwidth, SLA) are rendered as charts automatically, reducing cognitive load
+- **No hallucinated specs** — the bot only cites numbers that exist in the knowledge base; if the data isn't there, it says so
+- **Always available** — runs 24/7 on VNG Cloud AgentBase without requiring a support agent on standby
 
-The key is read in-process and never echoed to the shell or committed to the repo.
+---
 
-**Local dev — use `.env`** (recommended):
+## What It Does
 
-```bash
-cp .env.example .env
-# open .env and paste your key into NODE_AGENT_API_KEY=
-```
+Node Agent Assistant handles customer inquiries across GreenNode's product lines using a 3-model pipeline:
 
-**Production (AgentBase) — environment variable:**
+- **Orchestrator** — understands the question, plans the retrieval strategy
+- **Thinker** — reasons over retrieved knowledge base chunks
+- **Writer** — composes the final answer with inline citations `[n]` and chart recommendations
 
-Set `NODE_AGENT_API_KEY` directly in the AgentBase dashboard (see Deploy section below).
+Every answer follows a consistent structure: context confirmation → data table or chart (when numbers are available) → brief analysis → suggested next step. The bot never fabricates figures — if the knowledge base lacks data for a chart, it says so.
 
-`.env` is in `.gitignore` and will never be committed.
+Supported chart types: bar, horizontal bar, gauge, radar, donut.
 
-## Running
+---
 
-```bash
-source .venv/bin/activate
-python serve.py --port 8077
-```
+## Deployment
 
-Open http://127.0.0.1:8077 — default dashboard token is `demo-key-change-me` (override with `--token`).
+The assistant runs on **VNG Cloud AgentBase** and is deployed via Docker Hub.
 
-## Sample Questions (to see all chart types)
-
-| Question | Chart |
-|---|---|
-| Compare VRAM and bandwidth of H100 vs H200 | bar |
-| Rank GreenNode GPU rental prices | hbar |
-| GreenNode SLA uptime commitment | gauge 99.99% |
-| H100 multi-criteria capability profile | radar |
-| H100 cost vs performance | donut + radar |
-
-## Answer Structure
-
-Each answer follows: opening (confirms what it's helping with) → table/data + chart (when KB has matching numbers) → brief analysis → next-step prompt. The bot never fabricates numbers — if the KB has no suitable data for a chart type, it says so and skips the chart.
-
-## Advanced Options
-
-- `--dev-gateway` — use the internal gateway (reads from Hermes config) instead of MaaS. Dev environment only, not for use on other machines.
-- `--no-llm` — KB retrieval-only mode (no LLM calls).
-- `--model` — override the default writer model (default: `google/gemma-4-31b-it`).
-- Per-seat: set `NODE_AGENT_MODEL_ORCHESTRATOR` / `_THINKER` / `_WRITER` to override each seat's model.
-
-## Deploy (Docker Hub → VNG Cloud AgentBase)
-
-### Build and push image
+To ship a new version:
 
 ```bash
-# First time: log in to Docker Hub
-docker login
 export DOCKER_USER=your_dockerhub_username
-
-# Each time you want to deploy a new build
-./scripts/build_push.sh          # build + push :latest
-./scripts/build_push.sh v1.1     # also push a pinned version tag
+./scripts/build_push.sh          # builds and pushes :latest
+./scripts/build_push.sh v1.1     # also tags a pinned version
 ```
 
-The script builds with `--platform linux/amd64` for compatibility with x86 servers when building on Apple Silicon.
+Then go to **AgentBase dashboard → service → Redeploy** to pull the new image.
 
-### Pull the new image on AgentBase
+Required environment variables on AgentBase:
 
-Go to **VNG Cloud AgentBase dashboard** → select the service → click **Redeploy** (or **Update image**). AgentBase will pull the latest image from Docker Hub automatically.
-
-Environment variables to configure on AgentBase:
-
-| Variable | Value |
+| Variable | Description |
 |---|---|
-| `NODE_AGENT_API_KEY` | VNG MaaS API key |
-| `NODE_AGENT_DASH_TOKEN` | Dashboard login token |
-| `NODE_AGENT_MODEL` | `google/gemma-4-31b-it` (default) |
+| `NODE_AGENT_API_KEY` | VNG Cloud MaaS API key |
+| `NODE_AGENT_DASH_TOKEN` | Dashboard access token |
+| `NODE_AGENT_MODEL` | Writer model (default: `google/gemma-4-31b-it`) |
 
-Container exposes port `8080`, health check at `/health`.
+Container port: `8080` — health check: `/health`.
 
-## Responsive UI
+---
 
-The UI is fully responsive across all screen sizes:
+## Interface
 
-- **Desktop** — full layout, conversation sidebar, Harness monitor
-- **iPad (481–1024px)** — compact composer, kanban panel auto-scales to screen width
-- **Mobile (≤ 480px)** — 28px title, dock with `safe-area-inset-bottom` for iPhone home bar, full-width kanban panel anchored to bottom
+The UI is fully responsive across desktop, iPad, and mobile. A conversation sidebar keeps session history, and a live Harness monitor shows the 3-model pipeline in real time as each answer is generated.
+
+---
 
 ## Data
 
-- `data/kb_chunks.jsonl` — production KB (2716 chunks, crawled from greennode.ai / vngcloud).
-- `*.db` files (conversations, memory, traces) are auto-generated at runtime and listed in `.gitignore`.
+Knowledge base: `data/kb_chunks.jsonl` — 2,716 chunks crawled from greennode.ai and vngcloud documentation.

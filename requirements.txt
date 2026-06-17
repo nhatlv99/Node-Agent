@@ -1,0 +1,15 @@
+# Node Agent Assistant — runtime dependencies
+# Python 3.12+ recommended. HTTP to the LLM gateway uses the stdlib (urllib),
+# so no httpx/requests needed.
+
+fastapi>=0.110
+uvicorn>=0.29
+pydantic>=2.6
+PyYAML>=6.0
+
+# OPTIONAL — only needed for the live helpdesk crawler (SPA rendering).
+# The app degrades gracefully without it: render_article() returns empty and
+# the bot answers from the KB. Install only if you want live web grounding:
+#   pip install playwright
+#   python -m playwright install chromium
+# playwright>=1.43

@@ -1,0 +1,1620 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Node Agent Assistant — GreenNode</title>
+<style>
+  :root {
+    --bg: #0a0e0c;
+    --panel: #11160f;
+    --panel2: #161d14;
+    --border: rgba(255,255,255,0.08);
+    --fg: #e9f3ea;
+    --muted: #8aa090;
+    --green: #16a34a;
+    --green2: #22c55e;
+    --green3: #4ade80;
+    --user: #16a34a;
+    --warn: #d29922;
+    --bad: #f85149;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: inherit; }
+
+  /* ── Ray background (green) ── */
+  .rays {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    overflow: hidden; pointer-events: none; user-select: none; z-index: 0;
+  }
+  .rays .base { position: absolute; inset: 0; background: var(--bg); }
+  .rays .glow {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    width: 6000px; height: 1800px;
+    background: radial-gradient(circle at center 760px,
+      rgba(34,197,94,0.75) 0%,
+      rgba(34,197,94,0.32) 14%,
+      rgba(34,197,94,0.16) 18%,
+      rgba(34,197,94,0.07) 22%,
+      rgba(10,14,12,0.2) 25%);
+  }
+  .rays .arc-wrap {
+    position: absolute; top: 175px; left: 50%;
+    width: 3043px; height: 2865px; transform: translate(-50%) rotate(180deg);
+  }
+  .rays .arc { position: absolute; width: 100%; height: 100%; border-radius: 9999px; background: var(--bg); transform: rotate(180deg); }
+  .rays .a5 { margin-top: -13px; background: radial-gradient(43.89% 25.74% at 50% 97.24%, #0d120e 0%, #0a0e0c 100%); border: 16px solid #ffffff; z-index: 5; }
+  .rays .a4 { margin-top: -11px; border: 23px solid #bdf0cd; z-index: 4; }
+  .rays .a3 { margin-top: -8px;  border: 23px solid #86e0a5; z-index: 3; }
+  .rays .a2 { margin-top: -4px;  border: 23px solid #4fce7d; z-index: 2; }
+  .rays .a1 { border: 20px solid #16a34a; box-shadow: 0 -15px 24.8px rgba(22,163,74,0.6); z-index: 1; }
+
+  /* ── Top nav ── */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 28px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.3px; }
+  .brand .logo {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--green2), var(--green));
+    display: grid; place-items: center; color: #04130a; font-weight: 900; font-size: 17px;
+    box-shadow: 0 0 18px rgba(34,197,94,0.45);
+  }
+  .nav .links { display: flex; gap: 22px; font-size: 14px; color: var(--muted); }
+  .nav .links a:hover { color: var(--fg); }
+  .nav .cta {
+    font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 999px;
+    background: var(--green); color: #04130a; box-shadow: 0 0 20px rgba(34,197,94,0.35);
+    cursor: pointer; border: none;
+  }
+  @media (max-width: 720px){ .nav .links { display:none; } }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative; z-index: 10;
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 0 16px;
+  }
+  .badge {
+    position: relative; display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 18px; min-height: 40px; border-radius: 999px; font-size: 14px;
+    margin-bottom: 40px; cursor: default; overflow: hidden;
+    background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05));
+    backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: inset 0 1px rgba(255,255,255,0.2), inset 0 -1px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.08);
+  }
+  .badge .topline {
+    position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+    height: 2px; width: 120px; opacity: 0.7; filter: blur(0.5px);
+    background: linear-gradient(90deg, transparent, rgba(34,197,94,0.9) 30%, rgba(74,222,128,0.9) 50%, rgba(34,197,94,0.9) 70%, transparent);
+  }
+  .badge .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--green3); box-shadow: 0 0 10px var(--green3); }
+  h1.title {
+    text-align: center; font-size: 52px; line-height: 1.05; font-weight: 800;
+    letter-spacing: -1.5px; margin-bottom: 12px;
+  }
+  h1.title .grad {
+    background: linear-gradient(to bottom, var(--green3), var(--green2) 55%, #ffffff);
+    -webkit-background-clip: text; background-clip: text; color: transparent; font-style: italic;
+  }
+  .subtitle { text-align: center; color: var(--muted); font-size: 17px; font-weight: 500; margin-bottom: 34px; max-width: 540px; }
+  @media (max-width: 640px){ h1.title { font-size: 36px; } }
+
+  /* ── Chat input (glowing) ── */
+  .composer { position: relative; width: 100%; max-width: 700px; }
+  .composer .ring {
+    position: absolute; inset: -1px; border-radius: 18px; pointer-events: none;
+    background: linear-gradient(to bottom, rgba(34,197,94,0.25), transparent);
+  }
+  .composer .box {
+    position: relative; border-radius: 18px; background: var(--panel2);
+    box-shadow: 0 0 0 1px rgba(34,197,94,0.18), 0 2px 30px rgba(0,0,0,0.5);
+  }
+  .composer textarea {
+    width: 100%; resize: none; background: transparent; border: none; outline: none;
+    color: var(--fg); font-size: 15px; padding: 18px 20px 6px; min-height: 76px; max-height: 200px;
+    font-family: inherit;
+  }
+  .composer textarea::placeholder { color: #5c6f60; }
+  .composer .row { display: flex; align-items: center; justify-content: space-between; padding: 6px 12px 12px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+    color: var(--muted); background: rgba(255,255,255,0.06); padding: 7px 12px; border-radius: 999px;
+    border: none; cursor: default;
+  }
+  .send {
+    display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600;
+    padding: 9px 18px; border-radius: 999px; border: none; cursor: pointer;
+    background: var(--green); color: #04130a; box-shadow: 0 0 20px rgba(34,197,94,0.4);
+    transition: transform .12s, opacity .12s;
+  }
+  .send:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+  .send:not(:disabled):active { transform: scale(0.96); }
+  .samples { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 22px; max-width: 680px; }
+  .chip {
+    font-size: 12.5px; color: var(--muted); border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03); padding: 7px 13px; border-radius: 999px; cursor: pointer;
+    transition: all .15s;
+  }
+  .chip:hover { color: var(--fg); border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.08); }
+
+  /* ── Chat view ── */
+  .chatview { position: relative; z-index: 10; display: none; flex-direction: column; height: 100vh; max-width: 860px; margin: 0 auto; padding: 76px 16px 0; }
+  .chatview.active { display: flex; }
+  .stream { flex: 1; overflow-y: auto; padding: 18px 4px; padding-bottom: 200px; display: flex; flex-direction: column; gap: 18px; scroll-behavior: smooth; }
+  /* transparent, slim scrollbars (stream + dropdown menus) */
+  .stream, .dd-menu { scrollbar-width: thin; scrollbar-color: rgba(34,197,94,0.28) transparent; }
+  .stream::-webkit-scrollbar, .dd-menu::-webkit-scrollbar { width: 8px; }
+  .stream::-webkit-scrollbar-track, .dd-menu::-webkit-scrollbar-track { background: transparent; }
+  .stream::-webkit-scrollbar-thumb, .dd-menu::-webkit-scrollbar-thumb {
+    background: rgba(34,197,94,0.22); border-radius: 999px; border: 2px solid transparent; background-clip: padding-box;
+  }
+  .stream:hover::-webkit-scrollbar-thumb, .dd-menu:hover::-webkit-scrollbar-thumb { background: rgba(34,197,94,0.42); background-clip: padding-box; }
+  .msg { display: flex; gap: 12px; max-width: 100%; }
+  .msg .av { flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; font-size: 14px; font-weight: 800; }
+  .msg.user .av { background: #1d2a20; color: var(--green3); }
+  .msg.bot .av { background: linear-gradient(135deg, var(--green2), var(--green)); color: #04130a; box-shadow: 0 0 14px rgba(34,197,94,0.4); }
+  .bubble { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; font-size: 14.5px; line-height: 1.6; overflow-wrap: anywhere; }
+  .msg.user .bubble { background: #15211a; border-color: rgba(34,197,94,0.2); }
+  .bubble p { margin: 0 0 8px; } .bubble p:last-child { margin: 0; }
+  .bubble pre { background: #0a0f0c; border: 1px solid var(--border); border-radius: 8px; padding: 12px; overflow-x: auto; font-size: 13px; margin: 8px 0; }
+  .bubble code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .bubble table { border-collapse: collapse; margin: 8px 0; font-size: 13px; width: 100%; }
+  .bubble th, .bubble td { border: 1px solid var(--border); padding: 6px 9px; text-align: left; }
+  .bubble th { background: rgba(34,197,94,0.1); }
+  .bubble a { color: var(--green3); text-decoration: none; } .bubble a:hover { text-decoration: underline; }
+  .meta { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 11px; color: var(--muted); }
+  .tag { padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); }
+  .tag.live { color: var(--green3); border-color: rgba(34,197,94,0.4); }
+  .tag.mock { color: var(--warn); border-color: rgba(210,153,34,0.4); }
+  .tag.q { color: var(--green3); }
+  .sources { margin-top: 12px; padding-top: 10px; border-top: 1px solid #1c2a20; display: flex; flex-direction: column; gap: 4px; }
+  .sources .s { font-size: 12px; color: var(--muted); }
+  .sources .s a { color: var(--green3); }
+  /* enterprise citation: compact clickable [n] chip inside the answer body */
+  .cite-chip { display: inline-block; font-size: 10px; line-height: 1; font-weight: 600;
+    color: var(--green3); background: #11201a; border: 1px solid #1c2a20; border-radius: 5px;
+    padding: 1px 5px; margin: 0 1px; text-decoration: none; vertical-align: baseline; }
+  .cite-chip:hover { background: #16301f; border-color: var(--green3); }
+  /* inline markdown hyperlink — shows text, never the raw URL */
+  .md-link { color: var(--green3); text-decoration: none; border-bottom: 1px solid rgba(34,197,94,0.4); }
+  .md-link:hover { border-bottom-color: var(--green3); }
+  /* source row: [n] · title · domain (NEVER a full URL) */
+  .src-item { display: flex; align-items: baseline; gap: 7px; font-size: 12px;
+    color: #c2d4c9; text-decoration: none; padding: 3px 0; }
+  .src-item:hover .src-t { color: var(--green3); text-decoration: underline; }
+  .src-n { color: var(--green3); font-weight: 600; flex: 0 0 auto; font-size: 11px; }
+  .src-t { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .src-d { flex: 0 0 auto; font-size: 10px; color: #5c6f60; }
+  /* chart card (Tier-C) — ECharts renders pro-grade charts into .chart-mount.
+     Card frame styled like an enterprise BI dashboard panel: gradient surface,
+     soft shadow, header row with title + colored legend chips. */
+  .chart-card { margin: 14px 0 8px; padding: 0; overflow: hidden;
+    background: linear-gradient(180deg, #10201880 0%, #0b1410 100%);
+    border: 1px solid #2c4538; border-radius: 14px;
+    box-shadow: 0 14px 40px rgba(0,0,0,.55), 0 2px 6px rgba(0,0,0,.4),
+      inset 0 1px 0 rgba(120,220,160,.07); }
+  .chart-card .chart-head { border-bottom: 1px solid #1a2a20; margin-bottom: 6px; }
+  .chart-head { display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 12px 16px 8px; flex-wrap: wrap; }
+  .chart-ttl { font-size: 13.5px; font-weight: 650; color: #e9f3ea; letter-spacing: .1px; }
+  .chart-ttl .u { color: #6f8a79; font-weight: 500; font-size: 12px; margin-left: 4px; }
+  .chart-lg { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .chart-lg-i { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #9db8a8; }
+  .chart-lg-d { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
+  .chart-mount { width: 100%; height: 280px; padding: 0 8px 8px; }
+  /* live-streaming draft text (WRITE tokens arriving in real time) */
+  .draft { white-space: pre-wrap; line-height: 1.55; color: #d6f5e2;
+    border-left: 2px solid rgba(34,197,94,.4); padding-left: 10px;
+    animation: tkin .2s ease; }
+  .draft::after { content: "▍"; color: var(--green3); animation: blink 1s steps(1) infinite; }
+  .typing { display: inline-flex; gap: 4px; }
+  .typing span { width: 6px; height: 6px; border-radius: 999px; background: var(--green3); animation: blink 1.2s infinite; }
+  .typing span:nth-child(2){ animation-delay: .2s } .typing span:nth-child(3){ animation-delay: .4s }
+  /* in-bubble thinking step-by-step (replaces the 3-dot wait) */
+  .tk { display: flex; flex-direction: column; gap: 6px; }
+  .tk-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6c8f76; animation: tkin .25s ease; }
+  .tk-row.tk-cur { color: #d6f5e2; }
+  .tk-tx { line-height: 1.35; }
+  .tk-ok { color: var(--green3); font-size: 11px; flex: 0 0 auto; }
+  .tk-spin { width: 11px; height: 11px; flex: 0 0 auto; border-radius: 999px;
+    border: 2px solid #2a3d30; border-top-color: var(--green3); animation: tkspin .7s linear infinite; }
+  @keyframes tkspin { to { transform: rotate(360deg); } }
+  @keyframes tkin { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+  @keyframes blink { 0%,60%,100%{opacity:.25} 30%{opacity:1} }
+
+  .dock { position: fixed; bottom: 0; left: 0; right: 0; z-index: 20; display: none; padding: 14px 16px 22px; background: linear-gradient(to top, var(--bg) 60%, transparent); }
+  .dock.active { display: block; }
+  .dock .inner { max-width: 860px; margin: 0 auto; }
+  .topbar { position: fixed; top: 0; left:0; right:0; z-index: 31; display:none; align-items:center; justify-content:space-between; padding: 14px 20px; background: rgba(10,14,12,0.7); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+  .topbar.active { display: flex; }
+  .topbar .new { font-size: 13px; color: var(--muted); border: 1px solid var(--border); padding: 6px 12px; border-radius: 999px; cursor: pointer; background: transparent; }
+  .topbar .new:hover { color: var(--fg); border-color: rgba(34,197,94,0.4); }
+  /* ── In-card control bar (model + mode dropdowns), bolt2-style ── */
+  .ctrlbar { display: flex; align-items: center; gap: 8px; }
+  .dd { position: relative; }
+  .dd-btn {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+    color: var(--muted); background: rgba(255,255,255,0.06); border: 1px solid transparent;
+    padding: 7px 11px; border-radius: 999px; cursor: pointer; transition: all .15s; white-space: nowrap;
+  }
+  .dd-btn:hover { color: var(--fg); background: rgba(34,197,94,0.1); }
+  .dd-btn .chev { transition: transform .18s; font-size: 10px; opacity: .7; }
+  .dd.open .dd-btn { color: var(--fg); border-color: rgba(34,197,94,0.4); }
+  .dd.open .dd-btn .chev { transform: rotate(180deg); }
+  .dd-menu {
+    position: absolute; bottom: calc(100% + 8px); left: 0; z-index: 60; min-width: 230px;
+    background: rgba(20,28,22,0.97); backdrop-filter: blur(14px); border: 1px solid var(--border);
+    border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,0.55); padding: 6px;
+    display: none; max-height: 320px; overflow-y: auto;
+  }
+  .dd.open .dd-menu { display: block; animation: ddin .16s ease; }
+  @keyframes ddin { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+  .dd-head { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #5c6f60; padding: 6px 9px 4px; }
+  .dd-item {
+    display: flex; align-items: flex-start; gap: 9px; width: 100%; text-align: left;
+    padding: 8px 9px; border-radius: 9px; cursor: pointer; transition: background .12s; border: none; background: transparent;
+  }
+  .dd-item:hover { background: rgba(255,255,255,0.06); }
+  .dd-item.sel { background: rgba(34,197,94,0.12); }
+  .dd-item .ic { flex-shrink: 0; font-size: 14px; line-height: 1.3; }
+  .dd-item .tx { flex: 1; min-width: 0; }
+  .dd-item .nm { font-size: 13px; font-weight: 600; color: var(--fg); display: flex; align-items: center; gap: 6px; }
+  .dd-item .ds { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .dd-item .ck { color: var(--green3); font-size: 13px; flex-shrink: 0; opacity: 0; }
+  .dd-item.sel .ck { opacity: 1; }
+  .dd-badge { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 999px; background: rgba(34,197,94,0.18); color: var(--green3); }
+  .dd-badge.tune { background: rgba(210,153,34,0.18); color: var(--warn); }
+  @media (max-width: 640px){ .dd-btn { padding: 6px 9px; font-size: 11px; } .dd-menu { min-width: 200px; } }
+  .ai-note { text-align:center; font-size: 11px; color: #5c6f60; margin-top: 10px; }
+
+  /* ══ Harness / Kanban monitor ══ */
+  .kbtoggle { position: fixed; right: 18px; bottom: 18px; z-index: 60; padding: 9px 14px;
+    border-radius: 999px; border: 1px solid rgba(34,197,94,0.35); background: #0e1712;
+    color: var(--green3); font-size: 12px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.4); transition: transform .12s, background .12s; }
+  .kbtoggle:hover { transform: translateY(-1px); background: #122017; }
+  .kpanel { position: fixed; right: 18px; bottom: 64px; z-index: 60; width: 420px;
+    max-width: calc(100vw - 36px); max-height: 72vh; display: none; flex-direction: column;
+    background: #0b110d; border: 1px solid #1c2a20; border-radius: 14px; overflow: hidden;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.55); }
+  .kpanel.open { display: flex; }
+  .khead { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px;
+    border-bottom: 1px solid #1c2a20; background: #0e1712; }
+  .khead .kt { font-size: 13px; font-weight: 700; color: #d6f5e2; }
+  .khead .kdim { color: #5c6f60; font-weight: 400; font-size: 11px; }
+  .kx { background: none; border: none; color: #7c8f80; cursor: pointer; font-size: 14px; }
+  .kseats { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid #1c2a20; flex-wrap: wrap; }
+  .kseat { flex: 1; min-width: 110px; background: #0e1712; border: 1px solid #1c2a20; border-radius: 9px; padding: 7px 9px; }
+  .kseat .role { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: #6c8f76; }
+  .kseat .mdl { font-size: 11px; color: #d6f5e2; font-weight: 600; word-break: break-all; }
+  .kseat .src { font-size: 9px; color: #5c6f60; }
+  .kseat.orchestrator { border-color: rgba(34,197,94,0.4); }
+  .kseat.thinker { border-color: rgba(96,165,250,0.4); }
+  .kseat.writer { border-color: rgba(210,153,34,0.4); }
+  .ktabs { display: flex; gap: 4px; padding: 8px 12px 0; }
+  .ktab { background: none; border: none; color: #7c8f80; font-size: 12px; padding: 6px 10px;
+    border-radius: 8px 8px 0 0; cursor: pointer; }
+  .ktab.sel { color: var(--green3); background: #0e1712; }
+  .kscope { margin-left: auto; display: inline-flex; gap: 2px; background: #0b110d; border: 1px solid #1c2a20; border-radius: 7px; padding: 2px; }
+  .kscope-btn { background: none; border: none; color: #6c8f76; font-size: 10px; padding: 3px 8px; border-radius: 5px; cursor: pointer; }
+  .kscope-btn.sel { background: #16241b; color: var(--green3); }
+  .kbody { padding: 10px 12px; overflow-y: auto; }
+  .krun { border: 1px solid #1c2a20; border-radius: 10px; margin-bottom: 9px; overflow: hidden; }
+  .krun-h { display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: #0e1712; font-size: 11px; }
+  .krun-h .q { color: #d6f5e2; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .krun-h .v { font-weight: 700; }
+  .krun-h .v.ok { color: var(--green3); } .krun-h .v.bad { color: var(--warn); }
+  .klanes { display: flex; gap: 0; padding: 8px 6px; overflow-x: auto; }
+  .klane { flex: 0 0 auto; min-width: 72px; }
+  .klane .ln { font-size: 9px; text-transform: uppercase; color: #6c8f76; text-align: center; padding-bottom: 4px; letter-spacing: .03em; }
+  .kcard { font-size: 10px; padding: 5px 6px; margin: 3px; border-radius: 7px; background: #11201a;
+    border: 1px solid #1c2a20; color: #cfe9d8; }
+  .kcard.fail { border-color: rgba(210,153,34,0.5); background: #1c1810; }
+  .kcard.skip { opacity: .45; }
+  .kcard .cm { font-size: 9px; color: #7c8f80; }
+  .kcard .cd { font-size: 9px; color: #8fae9b; margin-top: 2px; line-height: 1.25; }
+  .karrow { align-self: center; color: #2c3d31; font-size: 12px; padding: 0 1px; }
+  .kbase-row { display: flex; align-items: center; gap: 8px; font-size: 11px; padding: 6px 0; border-bottom: 1px solid #14201a; }
+  .kbase-row .lbl { color: #7c8f80; flex: 1; }
+  .kbase-row .val { color: #d6f5e2; font-weight: 600; }
+  .kbase-seat { border: 1px solid #1c2a20; border-radius: 9px; padding: 8px 10px; margin-bottom: 7px; }
+  .kbase-seat .nm { font-size: 11px; font-weight: 700; color: #d6f5e2; margin-bottom: 4px; }
+  .kbase-seat .st { font-size: 10px; color: #8fae9b; }
+  .kempty { color: #5c6f60; font-size: 11px; text-align: center; padding: 18px 0; }
+  /* live per-turn pipeline */
+  .lq { font-size: 11px; color: #8fae9b; font-style: italic; padding: 4px 2px 10px; border-bottom: 1px solid #14201a; margin-bottom: 8px; }
+  .lflow { display: flex; flex-direction: column; gap: 8px; }
+  .lcard { border: 1px solid #1c2a20; border-left-width: 3px; border-radius: 9px; background: #0e1712; padding: 8px 10px;
+    animation: lpop .25s ease; }
+  @keyframes lpop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .lcard.orchestrator { border-left-color: var(--green3); }
+  .lcard.thinker { border-left-color: #60a5fa; }
+  .lcard.writer { border-left-color: var(--warn); }
+  .lcard.system { border-left-color: #4b6358; }
+  .lcard.done { border-left-color: var(--green3); background: #0c150f; }
+  .lcard.done.fail { border-left-color: var(--warn); }
+  .lcard.skip { opacity: .5; }
+  .lcard.fail { border-left-color: var(--warn); }
+  .lc-h { display: flex; align-items: center; gap: 7px; font-size: 11px; }
+  .lc-dot { color: var(--green3); font-size: 9px; }
+  .lcard.fail .lc-dot { color: var(--warn); }
+  .lc-lane { font-weight: 700; color: #d6f5e2; }
+  .lc-seat { color: #6c8f76; font-size: 10px; }
+  .lc-t { margin-left: auto; color: #5c6f60; font-size: 10px; white-space: nowrap; }
+  .lc-meta { font-size: 9px; color: #5c6f60; margin-top: 3px; }
+  .lc-body { margin-top: 6px; font-size: 11px; color: #cfe9d8; line-height: 1.4; max-height: 64px; overflow: hidden;
+    position: relative; cursor: pointer; border-top: 1px dashed #1c2a20; padding-top: 6px; }
+  .lc-body::after { content: "▾ xem thêm"; position: absolute; right: 0; bottom: 0; font-size: 9px; color: #6c8f76;
+    background: linear-gradient(90deg, transparent, #0e1712 40%); padding-left: 24px; }
+  .lc-body.exp { max-height: none; }
+  .lc-body.exp::after { content: "▴ thu gọn"; }
+  .lc-body .chip { display: inline-block; font-size: 9px; background: #11201a; border: 1px solid #1c2a20;
+    border-radius: 999px; padding: 1px 7px; margin: 2px 2px 0 0; color: #8fae9b; }
+  .lc-body table { font-size: 10px; border-collapse: collapse; margin: 4px 0; }
+  .lc-body th, .lc-body td { border: 1px solid #1c2a20; padding: 2px 5px; }
+  .lc-src { font-size: 9px; color: #7c8f80; white-space: pre-wrap; margin: 0; font-family: ui-monospace,monospace; }
+  /* ── VERTICAL pipeline timeline (top→bottom, spine on the left) ── */
+  .ltl { position: relative; padding: 6px 0 6px 30px; }
+  /* the vertical spine line running through all nodes */
+  .ltl::before { content: ""; position: absolute; left: 13px; top: 8px; bottom: 8px; width: 2px;
+    background: #1c2a20; border-radius: 2px; }
+  .lstep { position: relative; margin-bottom: 10px; }
+  /* node dot sitting on the spine */
+  .lstep::before { content: ""; position: absolute; left: -23px; top: 11px; width: 14px; height: 14px;
+    border-radius: 50%; border: 2px solid #2c3d31; background: #0b110d; z-index: 2; transition: all .25s; }
+  .lstep.done::before { border-color: var(--green3); background: var(--green3); box-shadow: 0 0 8px rgba(74,222,128,0.5); }
+  .lstep.active::before { border-color: #a78bfa; background: #a78bfa; animation: nodePulse 1.1s ease-in-out infinite; }
+  .lstep.fail::before { border-color: var(--warn); background: var(--warn); }
+  .lstep.skip::before { border-style: dashed; opacity: .5; }
+  @keyframes nodePulse { 0%,100% { box-shadow: 0 0 5px rgba(167,139,250,0.4); } 50% { box-shadow: 0 0 16px rgba(167,139,250,0.85); } }
+  /* the clickable step card */
+  .lstep-card { border: 1px solid #1c2a20; border-radius: 9px; background: #0e1712; padding: 9px 11px;
+    cursor: pointer; transition: border-color .15s, background .15s; animation: lpop .25s ease; }
+  .lstep-card:hover { border-color: #2c4536; background: #112018; }
+  .lstep.active .lstep-card { border-color: rgba(167,139,250,0.4); }
+  .lstep.fail .lstep-card { border-color: rgba(210,153,34,0.45); }
+  .lstep.skip .lstep-card { opacity: .55; }
+  .lstep.done.final .lstep-card { background: #0c150f; border-color: var(--green3); }
+  .ls-h { display: flex; align-items: center; gap: 8px; }
+  .ls-stage { font-weight: 700; color: #d6f5e2; font-size: 12px; }
+  .ls-seat { font-size: 10px; color: #6c8f76; }
+  .lstep.active .ls-seat { color: #a78bfa; }
+  .ls-t { margin-left: auto; color: #5c6f60; font-size: 10px; white-space: nowrap; }
+  .ls-chev { color: #5c6f60; font-size: 10px; transition: transform .15s; }
+  .lstep-card.exp .ls-chev { transform: rotate(90deg); }
+  .ls-meta { font-size: 9px; color: #5c6f60; margin-top: 4px; }
+  /* detail drawer (hidden until the card is clicked) */
+  .ls-detail { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #1c2a20; }
+  .lstep-card.exp .ls-detail { display: block; }
+  .ls-out { font-size: 11px; color: #cfe9d8; line-height: 1.45; max-height: 220px; overflow-y: auto; }
+  .ls-out table { font-size: 10px; border-collapse: collapse; margin: 4px 0; }
+  .ls-out th, .ls-out td { border: 1px solid #1c2a20; padding: 2px 5px; }
+  .ls-out .chip { display: inline-block; font-size: 9px; background: #11201a; border: 1px solid #1c2a20;
+    border-radius: 999px; padding: 2px 8px; margin: 2px 3px 0 0; color: #8fae9b; }
+  .ls-src { font-size: 9px; color: #7c8f80; white-space: pre-wrap; margin: 0; font-family: ui-monospace,monospace; }
+  /* per-seat baseline mini-panel inside the drawer */
+  .ls-base { margin-top: 8px; padding: 7px 9px; background: #0b130e; border: 1px solid #16241b; border-radius: 7px; }
+  .ls-base-t { font-size: 9px; text-transform: uppercase; letter-spacing: .04em; color: #6c8f76; margin-bottom: 5px; }
+  .ls-base-g { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ls-bm { flex: 1; min-width: 70px; text-align: center; background: #0e1712; border: 1px solid #1c2a20; border-radius: 6px; padding: 5px 4px; }
+  .ls-bm .n { font-size: 13px; font-weight: 700; color: #d6f5e2; }
+  .ls-bm .k { font-size: 8px; color: #6c8f76; text-transform: uppercase; letter-spacing: .03em; margin-top: 2px; }
+  /* ── Sidebar: conversation history (session cũ) ── */
+  .sb-open { position: fixed; left: 14px; top: 14px; z-index: 120; width: 34px; height: 34px;
+    border-radius: 9px; border: 1px solid #1c2a20; background: #0e1712; color: #8fae9b;
+    font-size: 15px; cursor: pointer; transition: background .15s; }
+  .sb-open:hover { background: #122017; color: var(--green3); }
+  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 280px; z-index: 130;
+    background: #0a0f0c; border-right: 1px solid #1c2a20; display: flex; flex-direction: column;
+    transform: translateX(-100%); transition: transform .22s cubic-bezier(.4,0,.2,1); }
+  .sidebar.open { transform: none; box-shadow: 6px 0 30px rgba(0,0,0,0.5); }
+  .sb-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #1c2a20; }
+  .sb-title { font-weight: 700; color: #d6f5e2; font-size: 14px; }
+  .sb-x { background: none; border: none; color: #7c8f80; font-size: 14px; cursor: pointer; }
+  .sb-new { margin: 12px 14px; padding: 9px 12px; border-radius: 9px; border: 1px solid rgba(34,197,94,0.35);
+    background: #0e1712; color: var(--green3); font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s; }
+  .sb-new:hover { background: #122017; }
+  .sb-list { flex: 1; overflow-y: auto; padding: 4px 10px 14px; display: flex; flex-direction: column; gap: 4px; }
+  .sb-item { position: relative; padding: 9px 30px 9px 11px; border-radius: 8px; border: 1px solid transparent;
+    cursor: pointer; transition: background .12s, border-color .12s; }
+  .sb-item:hover { background: #0e1712; border-color: #1c2a20; }
+  .sb-item.cur { background: #11201a; border-color: rgba(34,197,94,0.3); }
+  .sb-item .t { font-size: 12px; color: #d6f5e2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-item .m { font-size: 9px; color: #5c6f60; margin-top: 3px; }
+  .sb-del { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none;
+    color: #5c6f60; font-size: 12px; cursor: pointer; opacity: 0; transition: opacity .12s, color .12s; }
+  .sb-item:hover .sb-del { opacity: 1; }
+  .sb-del:hover { color: var(--warn); }
+  .sb-empty { color: #5c6f60; font-size: 11px; text-align: center; padding: 24px 8px; line-height: 1.6; }
+</style>
+<script src="/echarts.min.js"></script>
+</head>
+<body>
+
+<div class="rays">
+  <div class="base"></div>
+  <div class="glow"></div>
+  <div class="arc-wrap">
+    <div class="arc a5"></div><div class="arc a4"></div><div class="arc a3"></div>
+    <div class="arc a2"></div><div class="arc a1"></div>
+  </div>
+</div>
+
+<!-- ══ Sidebar: lịch sử hội thoại (session cũ) ══ -->
+<button class="sb-open" id="sbOpen" onclick="toggleSidebar()" title="Lịch sử hội thoại">☰</button>
+<div class="sidebar" id="sidebar">
+  <div class="sb-head">
+    <span class="sb-title">Hội thoại</span>
+    <button class="sb-x" onclick="toggleSidebar()">✕</button>
+  </div>
+  <button class="sb-new" onclick="newSession()">+ Cuộc trò chuyện mới</button>
+  <div class="sb-list" id="sbList"></div>
+</div>
+
+<!-- nav -->
+<div class="nav" id="nav">
+  <div class="brand"><div class="logo">N</div> Node Agent <span style="color:var(--green3)">Assistant</span> <span id="buildTag" style="font-size:10px;color:#5c6f60;font-weight:400;border:1px solid #1c2a20;border-radius:6px;padding:1px 6px;margin-left:6px">build —</span></div>
+  <div class="links">
+    <a href="https://greennode.ai/product/gpu-instances" target="_blank">Cloud</a>
+    <a href="https://greennode.ai/product/ai-platform" target="_blank">AI Platform</a>
+    <a href="https://greennode.ai/product/greennode-idp" target="_blank">Automation</a>
+    <a href="https://greennode.ai/pricing" target="_blank">Pricing</a>
+  </div>
+  <button class="cta" onclick="document.querySelector('.composer textarea').focus()">Hỏi trợ lý</button>
+</div>
+
+<!-- top bar in chat mode -->
+<div class="topbar" id="topbar">
+  <div class="brand"><div class="logo">N</div> <span id="brandName">Node Agent</span> <span style="color:var(--green3)" id="brandName2">Assistant</span></div>
+  <button class="new" onclick="resetChat()">+ Cuộc trò chuyện mới</button>
+</div>
+
+<!-- hero / landing -->
+<div class="hero" id="hero">
+  <div class="badge"><span class="topline"></span><span class="dot"></span><span>Trợ lý AI của GreenNode — Cloud · AI Platform · Automation</span></div>
+  <h1 class="title">Bạn cần hỗ trợ gì về <span class="grad">GreenNode</span> hôm nay?</h1>
+  <p class="subtitle">Hỏi bất cứ điều gì về High-Performance Cloud, AI Platform &amp; Services, hay Intelligent Automation. Trả lời dựa trên tài liệu chính thức, có trích nguồn.</p>
+
+  <div class="composer">
+    <div class="ring"></div>
+    <div class="box">
+      <textarea id="heroInput" placeholder="Ví dụ: GreenNode hỗ trợ Kubernetes không? Bảng giá GPU H100 thế nào?" rows="1"></textarea>
+      <div class="row">
+        <div class="ctrlbar" id="ctrlbar-hero"></div>
+        <button class="send" id="heroSend" disabled onclick="startFromHero()">Gửi <span style="font-size:16px">➤</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="samples" id="chips"></div>
+</div>
+
+<!-- chat view -->
+<div class="chatview" id="chatview">
+  <div class="stream" id="stream"></div>
+</div>
+
+<!-- docked composer (chat mode) -->
+<div class="dock" id="dock">
+  <div class="inner composer" style="max-width:860px">
+    <div class="ring"></div>
+    <div class="box">
+      <textarea id="dockInput" placeholder="Nhập câu hỏi..." rows="1"></textarea>
+      <div class="row">
+        <div class="ctrlbar" id="ctrlbar-dock"></div>
+        <button class="send" id="dockSend" disabled onclick="sendDock()">Gửi <span style="font-size:16px">➤</span></button>
+      </div>
+    </div>
+    <div class="ai-note">Node Agent Assistant là trợ lý AI. Thông tin có thể chưa đầy đủ — vui lòng kiểm chứng với GreenNode khi cần.</div>
+  </div>
+</div>
+
+<!-- ══ Kanban / baseline monitor (toggle ẩn-hiện) ══ -->
+<button class="kbtoggle" id="kbToggle" onclick="toggleKanban()" title="Theo dõi quy trình 3 model (baseline)">⚙ Harness</button>
+<div class="kpanel" id="kpanel">
+  <div class="khead">
+    <span class="kt">⚙ Multi-model Harness <span class="kdim">— baseline monitor</span></span>
+    <button class="kx" onclick="toggleKanban()">✕</button>
+  </div>
+  <div class="kseats" id="kseats"></div>
+  <div class="ktabs">
+    <button class="ktab sel" data-tab="live" onclick="kTab('live')">● Live</button>
+    <button class="ktab" data-tab="board" onclick="kTab('board')">Lịch sử</button>
+    <button class="ktab" data-tab="base" onclick="kTab('base')">Baseline</button>
+    <span class="kscope">
+      <button class="kscope-btn sel" data-scope="session" onclick="setScope('session')">Session này</button>
+      <button class="kscope-btn" data-scope="all" onclick="setScope('all')">Tất cả</button>
+    </span>
+  </div>
+  <div class="kbody" id="kbody-live"></div>
+  <div class="kbody" id="kbody-board" style="display:none"></div>
+  <div class="kbody" id="kbody-base" style="display:none"></div>
+</div>
+
+<script>
+// Build marker so we can SEE which version a tab is running (cache check).
+const BUILD = "stream+chart16-2026-06-16";
+try { document.getElementById("buildTag").textContent = BUILD; } catch(_){}
+console.log("[Node Agent] build:", BUILD);
+const TOKEN = localStorage.getItem("na_token") || "demo-key-change-me";
+// Stable per-browser session id so conversation history + long-term memory persist.
+let SESSION = localStorage.getItem("na_session");
+if(!SESSION){ SESSION = "s-" + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem("na_session", SESSION); }
+let MODE = "node_assistant";
+let MODEL = null;  // null = server default
+const SAMPLES_BY_MODE = {
+  node_assistant: [
+    "GreenNode hỗ trợ Kubernetes không?",
+    "Bảng giá thuê GPU instance thế nào?",
+    "H100 và H200 khác nhau ra sao?",
+    "IDP xử lý hóa đơn như thế nào?",
+    "MaaS là gì và có những model nào?",
+  ],
+  trading_agent: [
+    "Giải thích chỉ báo RSI và cách dùng.",
+    "Cách đọc báo cáo tài chính công ty niêm yết?",
+    "Chiến lược quản trị rủi ro khi giao dịch VN30?",
+    "Phân biệt phân tích kỹ thuật và cơ bản.",
+    "Mô hình nến đảo chiều phổ biến là gì?",
+  ],
+};
+let SAMPLES = SAMPLES_BY_MODE.node_assistant;
+
+const heroInput = document.getElementById("heroInput");
+const heroSend = document.getElementById("heroSend");
+const dockInput = document.getElementById("dockInput");
+const dockSend = document.getElementById("dockSend");
+const stream = document.getElementById("stream");
+
+function autosize(t){ t.style.height="auto"; t.style.height=Math.min(t.scrollHeight,200)+"px"; }
+function toggleSend(input, btn){ btn.disabled = !input.value.trim(); }
+
+// Reserve exactly the dock's real height (it grows with textarea / mode copy)
+// as stream bottom padding, so the last bubble is never hidden behind the card.
+const dockEl = document.getElementById("dock");
+function syncDockPad(){
+  if(!inChat) return;
+  const h = dockEl.offsetHeight || 0;
+  stream.style.paddingBottom = (h + 24) + "px";
+}
+window.addEventListener("resize", syncDockPad);
+
+heroInput.addEventListener("input", () => { autosize(heroInput); toggleSend(heroInput, heroSend); });
+dockInput.addEventListener("input", () => { autosize(dockInput); toggleSend(dockInput, dockSend); syncDockPad(); });
+heroInput.addEventListener("keydown", e => { if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); startFromHero(); }});
+dockInput.addEventListener("keydown", e => { if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendDock(); }});
+
+// sample chips (re-rendered when mode changes)
+const chips = document.getElementById("chips");
+function renderChips(){
+  chips.innerHTML = "";
+  SAMPLES.forEach(s => {
+    const c = document.createElement("div"); c.className="chip"; c.textContent=s;
+    c.onclick = () => { heroInput.value=s; toggleSend(heroInput,heroSend); startFromHero(); };
+    chips.appendChild(c);
+  });
+}
+renderChips();
+
+let inChat = false;
+function enterChat(){
+  if(inChat) return; inChat = true;
+  document.getElementById("hero").style.display="none";
+  document.getElementById("nav").style.display="none";
+  document.getElementById("chatview").classList.add("active");
+  document.getElementById("dock").classList.add("active");
+  document.getElementById("topbar").classList.add("active");
+  requestAnimationFrame(syncDockPad);  // dock now visible → measure real height
+}
+function resetChat(){
+  inChat=false; stream.innerHTML="";
+  document.getElementById("hero").style.display="flex";
+  document.getElementById("nav").style.display="flex";
+  document.getElementById("chatview").classList.remove("active");
+  document.getElementById("dock").classList.remove("active");
+  document.getElementById("topbar").classList.remove("active");
+  heroInput.value=""; toggleSend(heroInput,heroSend);
+}
+
+// ══ Sidebar: conversation history (session cũ) ══════════════════════════
+function toggleSidebar(){
+  const sb = document.getElementById("sidebar");
+  const open = sb.classList.toggle("open");
+  if(open) refreshSessions();
+}
+function newSession(){
+  // mint a fresh session id, clear the chat, keep the sidebar open.
+  SESSION = "s-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  localStorage.setItem("na_session", SESSION);
+  resetChat();
+  refreshSessions();
+}
+function fmtAgo(ts){
+  if(!ts) return "";
+  const s = Math.max(0, Date.now()/1000 - ts);
+  if(s < 60) return "vừa xong";
+  if(s < 3600) return Math.floor(s/60)+" phút trước";
+  if(s < 86400) return Math.floor(s/3600)+" giờ trước";
+  return Math.floor(s/86400)+" ngày trước";
+}
+function refreshSessions(){
+  fetch("/api/sessions?limit=50", KAUTH).then(r=>r.json()).then(d=>{
+    const list = document.getElementById("sbList");
+    const sess = d.sessions || [];
+    if(!sess.length){ list.innerHTML = '<div class="sb-empty">Chưa có hội thoại nào.<br>Hỏi 1 câu để bắt đầu.</div>'; return; }
+    list.innerHTML = "";
+    sess.forEach(s=>{
+      const it = el("div","sb-item"+(s.session_id===SESSION?" cur":""));
+      it.innerHTML = `<div class="t">${(s.title||"(chưa có câu hỏi)").replace(/</g,"&lt;")}</div>`
+        + `<div class="m">${s.turns} lượt · ${fmtAgo(s.last_ts)}</div>`
+        + `<button class="sb-del" title="Xoá">🗑</button>`;
+      it.onclick = (e)=>{ if(e.target.classList.contains("sb-del")) return; loadSession(s.session_id); };
+      it.querySelector(".sb-del").onclick = (e)=>{ e.stopPropagation(); deleteSession(s.session_id); };
+      list.appendChild(it);
+    });
+  }).catch(()=>{});
+}
+function loadSession(sid){
+  fetch("/api/session/"+encodeURIComponent(sid), KAUTH).then(r=>r.json()).then(d=>{
+    SESSION = sid; localStorage.setItem("na_session", SESSION);
+    enterChat(); stream.innerHTML = "";
+    (d.turns||[]).forEach(t=>{
+      if(t.role === "user"){ addUser(t.content); }
+      else {
+        const m = el("div","msg bot"); m.appendChild(el("div","av","N"));
+        const b = el("div","bubble"); m.appendChild(b);
+        stream.appendChild(m);
+        renderAnswer(b, t.content, { live:false, quality_score:1, domain:"", sources:[] });
+      }
+    });
+    stream.scrollTop = stream.scrollHeight;
+    refreshSessions();  // highlight the now-current session
+  }).catch(()=>{});
+}
+function deleteSession(sid){
+  fetch("/api/session/"+encodeURIComponent(sid), { method:"DELETE", headers: KAUTH.headers })
+    .then(()=>{
+      if(sid===SESSION) newSession();
+      else refreshSessions();
+    }).catch(()=>{});
+}
+
+function el(tag, cls, html){ const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
+
+// ── Chart renderer (Tier-C) — Apache ECharts ────────────────────────────────
+// The model emits a tiny ```chart JSON (data only); the FRONTEND renders it with
+// ECharts — the same engine enterprise/cloud dashboards use (smooth animation,
+// bar/line/pie/donut, dark theme). Model stays at the data layer where small
+// models are reliable; pro-grade layout/animation lives here in the UI.
+//
+// ECharts needs a real DOM node, so mdToHtml only emits a PLACEHOLDER <div> with
+// the spec stashed in data-spec; activateCharts() inits each one after the HTML
+// is mounted. Counter gives every placeholder a unique id within the bubble.
+let _chartSeq = 0;
+// Multi-hue enterprise palette (greens lead, but distinct hues so multi-series
+// charts stay readable — a pure-green ramp blurs into one another).
+const _GN_GREENS = ["#22c55e","#38bdf8","#a78bfa","#fbbf24","#fb7185","#2dd4bf","#f97316","#94a3b8"];
+
+// ── ECharts gradient helper: vertical fade of one hue (bar/area depth) ───────
+function _grad(hex, topA, botA){
+  return new echarts.graphic.LinearGradient(0,0,0,1,[
+    { offset:0, color:_rgba(hex, topA==null?0.95:topA) },
+    { offset:1, color:_rgba(hex, botA==null?0.45:botA) },
+  ]);
+}
+function _rgba(hex, a){
+  const h=hex.replace("#",""); const n=parseInt(h.length===3?h.replace(/(.)/g,"$1$1"):h,16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
+
+// Build the HTML header row for a chart card: title (+ unit) on the left, a
+// colored-chip legend on the right. Drawn in real HTML so it reads as a polished
+// BI panel even before the canvas paints (and survives a static screenshot).
+function _esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function _chartHead(spec){
+  const type=(spec.type||"bar").toLowerCase();
+  const ttl = spec.title ? `<span class="chart-ttl">${_esc(spec.title)}`
+              + (spec.unit?`<span class="u">(${_esc(spec.unit)})</span>`:"") + `</span>` : `<span class="chart-ttl"></span>`;
+  // Legend entries: for pie/donut/radar the slices/axes are the labels; for
+  // bar/line/area each series is one legend item (its own hue).
+  let items=[];
+  if(type==="pie"||type==="donut"){
+    items=(spec.labels||[]).map((n,i)=>({name:n,hue:_GN_GREENS[i%_GN_GREENS.length]}));
+  } else if(type==="gauge"){
+    items=[];
+  } else {
+    const ser=(spec.series||[]);
+    items=ser.map((s,i)=>({name:s.name||("Chỉ số "+(i+1)),hue:_GN_GREENS[i%_GN_GREENS.length]}));
+  }
+  const lg = items.length>1 || (type!=="bar"&&type!=="hbar"&&items.length)
+    ? `<span class="chart-lg">`+items.map(it=>
+        `<span class="chart-lg-i"><span class="chart-lg-d" style="background:${it.hue}"></span>${_esc(it.name)}</span>`
+      ).join("")+`</span>` : "";
+  return `<div class="chart-head">${ttl}${lg}</div>`;
+}
+
+// GreenNode dark theme for ECharts (consistent with the dashboard palette).
+function _gnChartTheme(){
+  return {
+    color: _GN_GREENS,
+    backgroundColor: "transparent",
+    textStyle: { color: "#c2d4c9", fontFamily: "inherit" },
+    title: { textStyle: { color: "#e9f3ea", fontSize: 13, fontWeight: 600 },
+             subtextStyle:{ color:"#6f8a79", fontSize:11 } },
+    legend: { textStyle: { color: "#8fae9b" }, icon:"roundRect", itemWidth:12, itemHeight:8 },
+    tooltip: {
+      backgroundColor: "rgba(10,18,14,0.95)", borderColor: "#1c2a20", borderWidth:1,
+      padding:[8,12], textStyle: { color: "#e9f3ea", fontSize:12 },
+      extraCssText:"box-shadow:0 8px 24px rgba(0,0,0,.45);border-radius:8px;",
+    },
+  };
+}
+
+// Cartesian axis defaults shared by bar/line/area/scatter/candlestick.
+function _axisCat(labels, horizontal){
+  return {
+    type:"category", data:labels, boundaryGap:true,
+    axisLine:{ lineStyle:{ color:"#1c2a20" } },
+    axisTick:{ show:false },
+    axisLabel:{ color:"#8fae9b", fontSize:11, interval:0, hideOverlap:true },
+  };
+}
+function _axisVal(unit){
+  return {
+    type:"value", name: unit||undefined, nameTextStyle:{ color:"#6f8a79", fontSize:10 },
+    axisLabel:{ color:"#8fae9b", fontSize:10 },
+    splitLine:{ lineStyle:{ color:"#13201a" } },
+  };
+}
+
+// Public entry: build the ECharts option, then (when the card already drew an
+// HTML header) strip ECharts' own title + legend so they don't render twice, and
+// reclaim the vertical space the title/legend would have used.
+function _chartOption(spec){
+  const opt = _chartOptionRaw(spec);
+  if(opt && spec && spec.framed){
+    opt.title = null;
+    delete opt.legend;
+    if(opt.grid) opt.grid.top = 16;            // no inner title/legend → tighter top
+    // The unit already lives in the HTML header "(GB)"; drop the axis-name copy
+    // so it doesn't paint a redundant little label at the axis tip.
+    [].concat(opt.yAxis||[], opt.xAxis||[]).forEach(a=>{ if(a) a.name = undefined; });
+    // pie/donut/radar: nudge the plot up a touch now the inner legend is gone.
+    if(Array.isArray(opt.series)){
+      opt.series.forEach(s=>{
+        if(s && (s.type==="pie") && Array.isArray(s.center)) s.center[1]="48%";
+      });
+      if(opt.radar && Array.isArray(opt.radar.center)) opt.radar.center[1]="52%";
+    }
+  }
+  return opt;
+}
+
+// Build the ECharts `option` object from our tiny chart spec.
+// Supported spec.type: bar | hbar | line | area | pie | donut | radar | gauge
+//                      | scatter | candlestick (alias: ohlc, candle, k)
+function _chartOptionRaw(spec){
+  const type = (spec.type||"bar").toLowerCase();
+  const labels = (spec.labels||[]).map(String);
+  const series = (spec.series||[]).filter(s=>Array.isArray(s.data));
+  const unit = spec.unit ? (" ("+spec.unit+")") : "";
+  const titleObj = spec.title ? { text: spec.title+unit, left:"center", top:4,
+                                  subtext: spec.subtitle||undefined } : null;
+  const theme = _gnChartTheme();
+
+  // ── PIE / DONUT — share-of-100% composition ────────────────────────────────
+  if(type === "pie" || type === "donut"){
+    const data = (series[0] ? series[0].data : (spec.data||[])).map((v,i)=>({
+      value:+v||0, name: labels[i]!=null?labels[i]:String(i+1),
+    }));
+    return {
+      ...theme, title: titleObj,
+      tooltip:{ ...theme.tooltip, trigger:"item", formatter:"{b}: {c} ({d}%)" },
+      legend:{ ...theme.legend, bottom:0 },
+      series:[{
+        type:"pie",
+        radius: type==="donut" ? ["46%","70%"] : ["0%","66%"],
+        center:["50%","52%"], avoidLabelOverlap:true,
+        itemStyle:{ borderColor:"#0a120e", borderWidth:3, borderRadius:6 },
+        label:{ color:"#c2d4c9", fontSize:11 },
+        labelLine:{ lineStyle:{ color:"#2a3d30" }, length:10, length2:10 },
+        emphasis:{ scale:true, scaleSize:8,
+          label:{ fontSize:13, fontWeight:"bold", color:"#e9f3ea" },
+          itemStyle:{ shadowBlur:18, shadowColor:"rgba(34,197,94,.45)" } },
+        data, animationType:"scale", animationEasing:"elasticOut", animationDuration:900,
+      }],
+    };
+  }
+
+  // ── RADAR — multi-attribute profile of one or few objects ───────────────────
+  if(type === "radar"){
+    const maxv = Math.max(1, ...series.flatMap(s=>s.data.map(v=>+v||0)));
+    return {
+      ...theme, title:titleObj,
+      tooltip:{ ...theme.tooltip, trigger:"item" },
+      legend:{ ...theme.legend, bottom:0 },
+      radar:{ indicator: labels.map(name=>({ name, max: spec.max||maxv*1.15 })),
+        center:["50%","54%"], radius:"64%",
+        axisName:{ color:"#8fae9b", fontSize:11 },
+        splitLine:{ lineStyle:{ color:"#1c2a20" } },
+        splitArea:{ areaStyle:{ color:["rgba(34,197,94,.03)","rgba(34,197,94,.07)"] } },
+        axisLine:{ lineStyle:{ color:"#1c2a20" } } },
+      series:[{ type:"radar", symbolSize:5,
+        emphasis:{ lineStyle:{ width:3 }, areaStyle:{ opacity:.35 } },
+        data: series.map((s,i)=>({ name:s.name||("Đối tượng "+(i+1)),
+          value:s.data.map(v=>+v||0),
+          areaStyle:{ opacity:.18 }, lineStyle:{ width:2 } })),
+        animationDuration:900 }],
+    };
+  }
+
+  // ── GAUGE — a single 0..max score (health, utilization, confidence) ─────────
+  if(type === "gauge"){
+    const val = (series[0] ? series[0].data[0] : (spec.value!=null?spec.value:(spec.data||[0])[0]));
+    const max = spec.max || 100;
+    return {
+      ...theme, title:titleObj,
+      series:[{ type:"gauge", min:0, max, center:["50%","58%"], radius:"92%",
+        startAngle:210, endAngle:-30,
+        progress:{ show:true, width:16, itemStyle:{ color:_grad("#22c55e",.95,.6) } },
+        axisLine:{ lineStyle:{ width:16, color:[[1,"#13201a"]] } },
+        axisTick:{ distance:-18, lineStyle:{ color:"#2a3d30" } },
+        splitLine:{ distance:-22, length:14, lineStyle:{ color:"#2a3d30" } },
+        axisLabel:{ distance:-12, color:"#6f8a79", fontSize:10 },
+        pointer:{ length:"62%", width:5, itemStyle:{ color:"#22c55e" } },
+        anchor:{ show:true, size:14, itemStyle:{ color:"#22c55e" } },
+        detail:{ valueAnimation:true, fontSize:26, color:"#e9f3ea",
+          formatter: spec.unit?("{value} "+spec.unit):"{value}", offsetCenter:[0,"34%"] },
+        data:[{ value:+val||0 }], animationDuration:1100 }],
+    };
+  }
+
+  // ── SCATTER — correlation between two numeric dimensions ────────────────────
+  if(type === "scatter"){
+    return {
+      ...theme, title:titleObj,
+      tooltip:{ ...theme.tooltip, trigger:"item",
+        formatter: p=>`${p.seriesName}<br/>${p.value[0]}, ${p.value[1]}` },
+      legend: series.length>1 ? { ...theme.legend, top: titleObj?26:4 } : undefined,
+      grid:{ left:50, right:20, top: titleObj?44:18, bottom:38 },
+      xAxis:{ ..._axisVal(spec.xunit), splitLine:{ lineStyle:{ color:"#13201a" } } },
+      yAxis: _axisVal(spec.yunit),
+      series: series.map((s,i)=>({ name:s.name||("Nhóm "+(i+1)), type:"scatter",
+        symbolSize: s.size||12, data:s.data,
+        emphasis:{ itemStyle:{ shadowBlur:14, shadowColor:"rgba(34,197,94,.5)" } },
+        itemStyle:{ opacity:.85 } })),
+    };
+  }
+
+  // ── HEATMAP — 2-D matrix of intensity (x category × y category → value) ─────
+  if(type === "heatmap"){
+    // spec.xlabels (cols) + spec.ylabels (rows); data = [[xi, yi, value], ...]
+    const xs = (spec.xlabels||spec.labels||[]).map(String);
+    const ys = (spec.ylabels||[]).map(String);
+    const cells = (series[0] ? series[0].data : (spec.data||[]));
+    const vals = cells.map(c=>+(Array.isArray(c)?c[2]:c)||0);
+    return {
+      ...theme, title:titleObj,
+      tooltip:{ ...theme.tooltip, trigger:"item",
+        formatter: p=>`${ys[p.value[1]]||""} · ${xs[p.value[0]]||""}<br/><b>${p.value[2]}</b>${spec.unit?" "+spec.unit:""}` },
+      grid:{ left:90, right:24, top: titleObj?44:18, bottom:60 },
+      xAxis:{ type:"category", data:xs, splitArea:{ show:true },
+        axisLabel:{ color:"#8fae9b", fontSize:10, rotate: xs.length>6?30:0 },
+        axisLine:{ lineStyle:{ color:"#1c2a20" } } },
+      yAxis:{ type:"category", data:ys, splitArea:{ show:true },
+        axisLabel:{ color:"#8fae9b", fontSize:10 },
+        axisLine:{ lineStyle:{ color:"#1c2a20" } } },
+      visualMap:{ min: Math.min(0,...vals), max: Math.max(1,...vals),
+        calculable:true, orient:"horizontal", left:"center", bottom:6,
+        textStyle:{ color:"#8fae9b" },
+        inRange:{ color:["#0b2418","#15803d","#22c55e","#86efac"] } },
+      series:[{ type:"heatmap", data:cells,
+        label:{ show: cells.length<=36, color:"#0a120e", fontSize:10 },
+        emphasis:{ itemStyle:{ shadowBlur:12, shadowColor:"rgba(34,197,94,.6)" } } }],
+    };
+  }
+
+  // ── HISTOGRAM — distribution of one numeric variable into bins ──────────────
+  // Bars touch (no gap) to signal a continuous distribution, not categories.
+  if(type === "histogram" || type === "hist"){
+    const counts = (series[0] ? series[0].data : (spec.data||[])).map(v=>+v||0);
+    return {
+      ...theme, title:titleObj,
+      tooltip:{ ...theme.tooltip, trigger:"axis", axisPointer:{ type:"shadow" } },
+      grid:{ left:50, right:20, top: titleObj?44:18, bottom:36 },
+      xAxis:{ ..._axisCat(labels), boundaryGap:true,
+        name: spec.xname||undefined, nameLocation:"middle", nameGap:28,
+        nameTextStyle:{ color:"#6f8a79", fontSize:10 } },
+      yAxis: _axisVal(spec.unit||"Tần suất"),
+      series:[{ type:"bar", data:counts, barWidth:"99%",
+        itemStyle:{ color:_grad("#22c55e",.95,.5), borderColor:"#0a120e", borderWidth:1 },
+        emphasis:{ itemStyle:{ shadowBlur:12, shadowColor:"rgba(34,197,94,.5)" } },
+        animationDelay: idx=>idx*40 }],
+    };
+  }
+
+  // ── BOX PLOT — distribution summary (min/Q1/median/Q3/max) per group ────────
+  if(type === "boxplot" || type === "box"){
+    // series[0].data = [[min,Q1,median,Q3,max], ...] aligned with labels.
+    const boxes = (series[0] ? series[0].data : (spec.data||[]));
+    return {
+      ...theme, title:titleObj,
+      tooltip:{ ...theme.tooltip, trigger:"item" },
+      grid:{ left:54, right:20, top: titleObj?44:18, bottom:40 },
+      xAxis:{ ..._axisCat(labels), boundaryGap:true },
+      yAxis:{ ..._axisVal(spec.unit), scale:true },
+      series:[{ type:"boxplot", data:boxes,
+        itemStyle:{ color:"rgba(34,197,94,.25)", borderColor:"#22c55e", borderWidth:2 },
+        emphasis:{ itemStyle:{ borderColor:"#86efac", shadowBlur:12, shadowColor:"rgba(34,197,94,.5)" } },
+        animationDuration:700 }],
+    };
+  }
+
+  // ── FUNNEL — stage-to-stage conversion / drop-off (monotonic decreasing) ────
+  if(type === "funnel"){
+    const data = (series[0] ? series[0].data : (spec.data||[])).map((v,i)=>({
+      value:+v||0, name: labels[i]!=null?labels[i]:String(i+1),
+    }));
+    const maxv = Math.max(1, ...data.map(d=>d.value));
+    return {
+      ...theme, title:titleObj,
+      tooltip:{ ...theme.tooltip, trigger:"item", formatter: spec.unit?("{b}: {c} "+spec.unit):"{b}: {c}" },
+      legend:{ ...theme.legend, bottom:0 },
+      series:[{ type:"funnel", left:"8%", right:"8%", top: titleObj?44:18, bottom:36,
+        min:0, max:maxv, minSize:"24%", maxSize:"100%", sort:"descending", gap:3,
+        label:{ color:"#e9f3ea", fontSize:11, formatter:"{b}\n{c}" },
+        labelLine:{ show:false },
+        itemStyle:{ borderColor:"#0a120e", borderWidth:2 },
+        emphasis:{ label:{ fontSize:13, fontWeight:"bold" } },
+        data, animationDuration:800 }],
+    };
+  }
+
+  // ── TREEMAP — part-to-whole of MANY items by nested rectangles ──────────────
+  if(type === "treemap" || type === "tree"){
+    // data = [{name, value}, ...] OR labels+series[0].data; supports children.
+    let data;
+    if(spec.data && spec.data.length && typeof spec.data[0]==="object"){
+      data = spec.data;
+    } else {
+      const vals = (series[0] ? series[0].data : (spec.data||[]));
+      data = vals.map((v,i)=>({ value:+v||0, name: labels[i]!=null?labels[i]:String(i+1) }));
+    }
+    return {
+      ...theme, title:titleObj,
+      tooltip:{ ...theme.tooltip, trigger:"item", formatter: spec.unit?("{b}: {c} "+spec.unit):"{b}: {c}" },
+      series:[{ type:"treemap", roam:false, top: titleObj?44:14, bottom:10, left:8, right:8,
+        breadcrumb:{ show:false },
+        label:{ color:"#0a120e", fontSize:11, fontWeight:600 },
+        upperLabel:{ show:false },
+        itemStyle:{ borderColor:"#0a120e", borderWidth:2, gapWidth:2 },
+        levels:[{ color:_GN_GREENS, colorMappingBy:"index",
+          itemStyle:{ borderColor:"#0a120e", borderWidth:2, gapWidth:2 } }],
+        data, animationDuration:800 }],
+    };
+  }
+
+  // ── CANDLESTICK — OHLC price action (Trading bot) ───────────────────────────
+  if(type === "candlestick" || type === "candle" || type === "ohlc" || type === "k"){
+    // series[0].data = [[open, close, low, high], ...] aligned with labels.
+    const ohlc = (series[0] ? series[0].data : (spec.data||[]));
+    return {
+      ...theme, title:titleObj,
+      tooltip:{ ...theme.tooltip, trigger:"axis", axisPointer:{ type:"cross" } },
+      grid:{ left:54, right:18, top: titleObj?44:18, bottom:38 },
+      xAxis:{ ..._axisCat(labels), boundaryGap:true },
+      yAxis:{ ..._axisVal(spec.unit), scale:true },
+      dataZoom: labels.length>20 ? [{ type:"inside" },{ type:"slider", height:16, bottom:8 }] : undefined,
+      series:[{ type:"candlestick", data: ohlc,
+        itemStyle:{ color:"#22c55e", color0:"#fb7185",
+          borderColor:"#16a34a", borderColor0:"#e11d48" },
+        animationDuration:700 }],
+    };
+  }
+
+  // ── BAR / HBAR / LINE / AREA (grouped Cartesian) ────────────────────────────
+  const isLine = type === "line";
+  const isArea = type === "area";
+  const isH    = type === "hbar";
+  const catAx  = _axisCat(labels, isH);
+  const valAx  = _axisVal(spec.unit);
+  return {
+    ...theme, title:titleObj,
+    tooltip:{ ...theme.tooltip, trigger:"axis",
+      axisPointer:{ type:(isLine||isArea)?"line":"shadow",
+        lineStyle:{ color:"#2a3d30" }, shadowStyle:{ color:"rgba(34,197,94,.08)" } } },
+    legend: series.length>1 ? { ...theme.legend, top: titleObj?28:4 } : undefined,
+    grid:{ left: isH?80:50, right:20, top: series.length>1?56:(titleObj?44:18), bottom:36 },
+    xAxis: isH ? valAx : catAx,
+    yAxis: isH ? catAx : valAx,
+    series: series.map((s,i)=>{
+      const hue=_GN_GREENS[i%_GN_GREENS.length];
+      const base={ name:s.name||("Chỉ số "+(i+1)), data:s.data.map(v=>+v||0),
+        animationDelay: idx=>idx*60+i*120, animationEasing:"cubicOut", animationDuration:800 };
+      if(isLine||isArea) return { ...base, type:"line", smooth:true,
+        symbol:"circle", symbolSize:7, showSymbol:true,
+        lineStyle:{ width:3, color:hue, shadowBlur:8, shadowColor:_rgba(hue,.4) },
+        itemStyle:{ color:hue, borderColor:"#0a120e", borderWidth:2 },
+        emphasis:{ focus:"series", scale:1.4 },
+        areaStyle: isArea ? { color:_grad(hue,.32,.02) } : undefined };
+      return { ...base, type:"bar", barMaxWidth:46,
+        itemStyle:{ color:_grad(hue,.95,.5), borderRadius: isH?[0,4,4,0]:[4,4,0,0] },
+        emphasis:{ focus:"series", itemStyle:{ shadowBlur:14, shadowColor:_rgba(hue,.55) } },
+        label:{ show:true, position: isH?"right":"top", color:"#c2d4c9", fontSize:10 } };
+    }),
+  };
+}
+
+// Activate every chart placeholder inside `root` (called after innerHTML mount).
+function activateCharts(root){
+  if(!root || typeof echarts === "undefined") return;
+  root.querySelectorAll(".chart-mount[data-spec]").forEach(node=>{
+    if(node._inited) return;
+    let spec; try { spec = JSON.parse(node.getAttribute("data-spec")); } catch(_){ return; }
+    const opt = _chartOption(spec);
+    if(!opt){ return; }
+    const chart = echarts.init(node, null, { renderer:"canvas" });
+    chart.setOption(opt);
+    node._inited = true;
+    node._chart = chart;
+    // responsive: redraw on container width changes.
+    if(typeof ResizeObserver !== "undefined"){
+      const ro = new ResizeObserver(()=>chart.resize());
+      ro.observe(node);
+    }
+  });
+}
+
+// minimal markdown -> html (headings, bold, code, tables, links, lists)
+function mdToHtml(md){
+  let s = md.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  // chart blocks FIRST (before the generic code-fence rule eats them). The JSON
+  // had its & < > escaped above; undo just those so JSON.parse sees clean text.
+  s = s.replace(/```chart\s*([\s\S]*?)```/g, (m,c)=>{
+    const json=c.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").trim();
+    // Validate it parses; stash the spec on a placeholder div for ECharts to
+    // init after mount. Bad spec → drop silently so the table still stands.
+    try {
+      const spec=JSON.parse(json);
+      if(!spec || typeof spec!=="object") return "";
+      spec.framed=true;  // header (title+legend) drawn in HTML → ECharts skips its own
+      const id="chart"+(++_chartSeq);
+      const enc=JSON.stringify(spec).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      return `<div class="chart-card">${_chartHead(spec)}<div class="chart-mount" id="${id}" data-spec="${enc}"></div></div>`;
+    } catch(_){ return ""; }
+  });
+  // code fences
+  s = s.replace(/```([\s\S]*?)```/g, (m,c)=>`<pre><code>${c.replace(/^[a-z]*\n/,"")}</code></pre>`);
+  // tables
+  s = s.replace(/(^\|.*\|$\n?)+/gm, block => {
+    const rows = block.trim().split("\n").map(r=>r.trim());
+    if(rows.length<2) return block;
+    const cells = r => r.replace(/^\||\|$/g,"").split("|").map(x=>x.trim());
+    const head = cells(rows[0]);
+    const body = rows.slice(2).map(cells);
+    let h = "<table><thead><tr>"+head.map(x=>`<th>${x}</th>`).join("")+"</tr></thead><tbody>";
+    body.forEach(r=> h+="<tr>"+r.map(x=>`<td>${x}</td>`).join("")+"</tr>");
+    return h+"</tbody></table>";
+  });
+  s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+  s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  // Markdown links [text](url) → clean hyperlink (shows text, hides long URL).
+  // Run BEFORE the [n] citation rule so [n] markers aren't mistaken for links.
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener" class="md-link">$1</a>');
+  s = s.replace(/\[(\d+)\]/g, '<sup style="color:var(--green3)">[$1]</sup>');
+  s = s.replace(/^### (.*)$/gm, "<strong>$1</strong>");
+  s = s.replace(/^## (.*)$/gm, "<strong>$1</strong>");
+  s = s.replace(/^[-*] (.*)$/gm, "• $1");
+  s = s.split(/\n{2,}/).map(p => (p.includes("<table")||p.includes("<pre")||p.includes("chart-card"))?p:`<p>${p.replace(/\n/g,"<br>")}</p>`).join("");
+  return s;
+}
+
+function addUser(text){
+  const m = el("div","msg user"); m.appendChild(el("div","av","Q"));
+  const b = el("div","bubble"); b.textContent = text; m.appendChild(b);
+  stream.appendChild(m); stream.scrollTop = stream.scrollHeight;
+}
+function addBotTyping(){
+  const m = el("div","msg bot"); m.appendChild(el("div","av","N"));
+  const b = el("div","bubble"); b.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  m.appendChild(b); stream.appendChild(m); stream.scrollTop = stream.scrollHeight;
+  return b;
+}
+
+// Trading mode (no harness) keeps the simple JSON path; Node Assistant streams.
+async function askJSON(question, bubble){
+  try {
+    const r = await fetch("/api/ask", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+TOKEN },
+      body: JSON.stringify({ question, mode: MODE, model: MODEL, session_id: SESSION })
+    });
+    if(!r.ok){ bubble.innerHTML = `<span style="color:var(--bad)">Lỗi ${r.status}. Kiểm tra token / server.</span>`; return; }
+    const d = await r.json();
+    renderAnswer(bubble, d.answer, d);
+  } catch(e){
+    bubble.innerHTML = `<span style="color:var(--bad)">Không kết nối được server.</span>`;
+  }
+  stream.scrollTop = stream.scrollHeight;
+}
+
+function renderAnswer(bubble, answer, meta){
+  let html = mdToHtml(answer || "(không có nội dung)");
+  // Enterprise: replace [n] citation markers in the body with clickable compact chips.
+  if(meta.sources && meta.sources.length){
+    meta.sources.forEach(s => {
+      const pat = new RegExp(`\\[${s.n}\\](?!\\d)`, "g");
+      html = html.replace(pat,
+        `<a class="cite-chip" href="${s.url}" target="_blank" title="${s.url}">[${s.n}]</a>`);
+    });
+  }
+  const liveTag = meta.live!==false ? '<span class="tag live">● LIVE</span>' : '<span class="tag mock">○ retrieve-only</span>';
+  const qTag = `<span class="tag q">q=${(meta.quality_score??1).toFixed(2)}</span>`;
+  const domTag = `<span class="tag">${meta.domain||""}</span>`;
+  const mdl = meta.model || (meta.seats && meta.seats.writer) || "";
+  html += `<div class="meta">${liveTag}${qTag}${domTag}<span class="tag">${shortModel(mdl)}</span></div>`;
+  if(meta.sources && meta.sources.length){
+    let sh = '<div class="sources">';
+    meta.sources.forEach(s => {
+      // Enterprise: show title + domain only — never a full URL in chat.
+      let display = s.title || "";
+      try { display = display || new URL(s.url).hostname; } catch(_){}
+      let domain = "";
+      try { domain = new URL(s.url).hostname; } catch(_){ domain = s.url; }
+      const esc = String(display).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      sh += `<a class="src-item" href="${s.url}" target="_blank" title="${s.url}"><span class="src-n">[${s.n}]</span> <span class="src-t">${esc}</span> <span class="src-d">${domain}</span></a>`;
+    });
+    sh += "</div>";
+    html += sh;
+  }
+  bubble.innerHTML = html;
+  // ECharts needs the nodes mounted first; init each chart placeholder now.
+  activateCharts(bubble);
+}
+
+// Node Assistant: stream the 3-seat pipeline live into the harness panel while
+// the answer is being built, then render the final answer in the chat bubble.
+function ask(question){
+  enterChat();
+  addUser(question);
+  const bubble = addBotTyping();
+  if(MODE !== "node_assistant"){ askJSON(question, bubble); return; }
+
+  // open the panel on the Live tab so anh watches the pipeline unfold.
+  openKanban(); kTab("live");
+  liveReset(question);
+
+  const url = `/api/ask_stream?q=${encodeURIComponent(question)}`
+            + `&token=${encodeURIComponent(TOKEN)}&session_id=${encodeURIComponent(SESSION)}`;
+  const es = new EventSource(url);
+  let lastDone = null;
+  // step-by-step "thinking" shown IN the chat bubble (replaces the 3-dot wait).
+  const think = { steps: [] };
+  bubble.innerHTML = thinkHtml(think);
+  // Live draft buffer: WRITE tokens stream in and build the answer text in
+  // real time, so the customer watches it appear instead of a long spinner.
+  let writeBuf = "";
+  let streaming = false;
+
+  es.onmessage = (e)=>{
+    let ev; try { ev = JSON.parse(e.data); } catch(_){ return; }
+    if(ev.type === "start"){ liveStart(ev); pushThink(bubble, think, thinkLine("start", ev)); }
+    else if(ev.type === "step"){ liveStep(ev); pushThink(bubble, think, thinkLine("step", ev)); }
+    else if(ev.type === "react"){ pushThink(bubble, think, thinkLine("react", ev)); }
+    else if(ev.type === "write"){
+      // First token: switch the bubble from thinking-steps to the live draft.
+      if(!streaming){ streaming = true; writeBuf = ""; bubble.innerHTML = '<div class="draft"></div>'; }
+      writeBuf += (ev.content || "");
+      const d = bubble.querySelector(".draft");
+      if(d){ d.textContent = writeBuf; }      // plain text while streaming (fast, safe)
+      stream.scrollTop = stream.scrollHeight;
+    }
+    else if(ev.type === "done"){ lastDone = ev; }
+    else if(ev.type === "error"){ bubble.innerHTML = `<span style="color:var(--bad)">Lỗi: ${ev.detail||""}</span>`; }
+  };
+  es.addEventListener("end", ()=>{
+    es.close();
+    if(lastDone){
+      renderAnswer(bubble, lastDone.answer, {
+        live:true, quality_score: lastDone.verified?1:0.5,
+        domain: LIVE.domain, sources: lastDone.sources, seats: LIVE.seats,
+      });
+      liveFinish(lastDone);
+    } else {
+      // Stream closed without a final answer (e.g. budget exhausted or a worker
+      // hiccup). Don't leave the user with a dead bubble — fall back to the
+      // non-stream JSON endpoint so they still get an answer.
+      askJSON(question, bubble);
+    }
+    stream.scrollTop = stream.scrollHeight;
+    refreshSessions();  // a new turn may have created/renamed this session
+  });
+  es.onerror = ()=>{ es.close(); if(!lastDone) askJSON(question, bubble); };
+}
+
+function startFromHero(){ const q=heroInput.value.trim(); if(!q)return; heroInput.value=""; ask(q); }
+function sendDock(){ const q=dockInput.value.trim(); if(!q)return; dockInput.value=""; autosize(dockInput); toggleSend(dockInput,dockSend); ask(q); }
+
+// ── In-card dropdowns (model + mode), rendered into BOTH composers ────────
+// Single source of truth for state; both ctrlbars re-render on any change.
+let MODELS = [];
+const MODE_DEFS = [
+  { id:"node_assistant", icon:"🟢", label:"Node Assistant", desc:"Hỗ trợ KH GreenNode (RAG, trích nguồn)" },
+  { id:"trading_agent",  icon:"📈", label:"Trading Agent",  desc:"Nghiên cứu giao dịch (tham khảo)" },
+];
+function shortModel(id){ return (id||"").split("/").pop(); }
+function modelById(id){ return MODELS.find(m=>m.id===id); }
+function modeById(id){ return MODE_DEFS.find(m=>m.id===id); }
+
+function closeAllDD(except){
+  document.querySelectorAll(".dd.open").forEach(d=>{ if(d!==except) d.classList.remove("open"); });
+}
+document.addEventListener("click", ()=>closeAllDD(null));
+
+// build one dropdown element
+function buildDD(kind){
+  const dd = el("div","dd");
+  const btn = el("button","dd-btn");
+  const menu = el("div","dd-menu");
+  dd.appendChild(btn); dd.appendChild(menu);
+  btn.onclick = (e)=>{ e.stopPropagation(); const wasOpen=dd.classList.contains("open"); closeAllDD(dd); dd.classList.toggle("open", !wasOpen); };
+  menu.onclick = (e)=>e.stopPropagation();
+  dd._kind = kind; dd._btn = btn; dd._menu = menu;
+  return dd;
+}
+
+function renderDDmenu(dd){
+  const menu = dd._menu, btn = dd._btn;
+  menu.innerHTML = "";
+  if(dd._kind === "model"){
+    const cur = modelById(MODEL) || MODELS[0];
+    btn.innerHTML = `⚡ <span>${cur?cur.label:"model"}</span> <span class="chev">▾</span>`;
+    menu.appendChild(el("div","dd-head","Chọn model (mạnh → nhẹ)"));
+    MODELS.forEach(m=>{
+      const it = el("button","dd-item"+(m.id===MODEL?" sel":""));
+      const tune = m.recommend_tune ? '<span class="dd-badge tune">⭐ tune</span>' : '';
+      it.innerHTML = `<span class="ic">⚡</span><span class="tx"><span class="nm">T${m.tier} · ${m.label} ${tune}</span><span class="ds">${m.class} · ${m.approx}</span></span><span class="ck">✓</span>`;
+      it.title = m.approx;
+      it.onclick = ()=>{ MODEL = m.id; dd.classList.remove("open"); syncDD(); };
+      menu.appendChild(it);
+    });
+  } else {
+    const cur = modeById(MODE);
+    btn.innerHTML = `${cur.icon} <span>${cur.label}</span> <span class="chev">▾</span>`;
+    menu.appendChild(el("div","dd-head","Chế độ trợ lý"));
+    MODE_DEFS.forEach(m=>{
+      const it = el("button","dd-item"+(m.id===MODE?" sel":""));
+      it.innerHTML = `<span class="ic">${m.icon}</span><span class="tx"><span class="nm">${m.label}</span><span class="ds">${m.desc}</span></span><span class="ck">✓</span>`;
+      it.onclick = ()=>{ setMode(m.id); dd.classList.remove("open"); };
+      menu.appendChild(it);
+    });
+  }
+}
+
+// mount dropdowns into both ctrlbars
+function mountCtrlbars(){
+  ["ctrlbar-hero","ctrlbar-dock"].forEach(id=>{
+    const bar = document.getElementById(id);
+    if(!bar) return;
+    bar.innerHTML = "";
+    bar.appendChild(buildDD("model"));
+    bar.appendChild(buildDD("mode"));
+  });
+  syncDD();
+}
+// re-render every dropdown button + menu from current MODEL/MODE
+function syncDD(){ document.querySelectorAll(".dd").forEach(renderDDmenu); }
+
+// ── mode change (also updates hero copy / brand / samples) ───────────────
+function setMode(mode){
+  MODE = mode;
+  SAMPLES = SAMPLES_BY_MODE[mode] || SAMPLES_BY_MODE.node_assistant;
+  const isTrade = mode === "trading_agent";
+  document.getElementById("brandName").textContent = isTrade ? "Trading" : "Node Agent";
+  document.getElementById("brandName2").textContent = isTrade ? "Agent" : "Assistant";
+  renderChips(); syncDD();
+  if(!inChat){
+    document.querySelector(".title").innerHTML = isTrade
+      ? 'Em hỗ trợ gì về <span class="grad">giao dịch</span> cho Anh/Chị?'
+      : 'Bạn cần hỗ trợ gì về <span class="grad">GreenNode</span> hôm nay?';
+    document.querySelector(".subtitle").textContent = isTrade
+      ? "Phân tích kỹ thuật, đọc báo cáo, khái niệm & quản trị rủi ro. Chỉ mang tính tham khảo, không phải lời khuyên đầu tư."
+      : "Hỏi bất cứ điều gì về High-Performance Cloud, AI Platform & Services, hay Intelligent Automation. Trả lời dựa trên tài liệu chính thức, có trích nguồn.";
+  }
+}
+
+// ── load model registry from server, then mount ─────────────────────────
+fetch("/api/models").then(r=>r.json()).then(d=>{
+  MODELS = d.models || [];
+  MODEL = d.default_model || (MODELS[0] && MODELS[0].id) || null;
+  mountCtrlbars();
+}).catch(()=>{ mountCtrlbars(); });
+
+// ══ Harness / Kanban monitor ════════════════════════════════════════════
+const KAUTH = { headers: { "Authorization": "Bearer " + TOKEN } };
+const LANE_ORDER = ["TRIAGE","THINK","WRITE","CRITIQUE","DONE","ESCALATE"];
+let KTAB = "live";
+let kPoll = null;
+
+function openKanban(){
+  const p = document.getElementById("kpanel");
+  if(!p.classList.contains("open")){ p.classList.add("open"); loadRoles(); }
+}
+function toggleKanban(){
+  const p = document.getElementById("kpanel");
+  const open = p.classList.toggle("open");
+  if(open){ loadRoles(); refreshKanban(); if(KTAB!=="live") kPoll = setInterval(refreshKanban, 4000); }
+  else if(kPoll){ clearInterval(kPoll); kPoll = null; }
+}
+function kTab(t){
+  KTAB = t;
+  document.querySelectorAll(".ktab").forEach(b=>b.classList.toggle("sel", b.dataset.tab===t));
+  document.getElementById("kbody-live").style.display  = t==="live"  ? "block" : "none";
+  document.getElementById("kbody-board").style.display = t==="board" ? "block" : "none";
+  document.getElementById("kbody-base").style.display  = t==="base"  ? "block" : "none";
+  // Live tab is event-driven (no polling); board/baseline poll.
+  if(kPoll){ clearInterval(kPoll); kPoll = null; }
+  if(t!=="live"){ refreshKanban(); kPoll = setInterval(refreshKanban, 4000); }
+}
+function loadRoles(){
+  fetch("/api/roles", KAUTH).then(r=>r.json()).then(d=>{
+    const box = document.getElementById("kseats");
+    const roles = d.roles || {};
+    box.innerHTML = "";
+    ["orchestrator","thinker","writer"].forEach(role=>{
+      const rm = roles[role]; if(!rm) return;
+      const srcLabel = rm.source==="env" ? "deploy" : (rm.source==="single-fallback" ? "single" : "dev");
+      box.appendChild(el("div","kseat "+role,
+        `<div class="role">${role}</div><div class="mdl">${shortModel(rm.model)}</div><div class="src">[${srcLabel}]</div>`));
+    });
+  }).catch(()=>{});
+}
+// SCOPE: "session" = chỉ session trình duyệt này · "all" = mọi session.
+let SCOPE = "session";
+function setScope(s){ SCOPE = s;
+  document.querySelectorAll(".kscope-btn").forEach(b=>b.classList.toggle("sel", b.dataset.scope===s));
+  refreshKanban();
+}
+function scopeQS(){ return SCOPE==="session" ? "&session_id="+encodeURIComponent(SESSION) : ""; }
+function refreshKanban(){
+  if(KTAB==="board"){
+    fetch("/api/trace?limit=12"+scopeQS(), KAUTH).then(r=>r.json()).then(d=>renderBoard(d.runs||[]))
+      .catch(()=>{});
+  } else {
+    const qs = SCOPE==="session" ? "?session_id="+encodeURIComponent(SESSION) : "";
+    fetch("/api/baseline"+qs, KAUTH).then(r=>r.json()).then(renderBaseline).catch(()=>{});
+  }
+}
+function renderBoard(runs){
+  const box = document.getElementById("kbody-board");
+  if(!runs.length){ box.innerHTML = '<div class="kempty">Chưa có lượt nào. Hỏi 1 câu để xem 3 model phối hợp.</div>'; return; }
+  box.innerHTML = "";
+  runs.forEach(run=>{
+    const card = el("div","krun");
+    const vcls = run.verified ? "ok" : "bad";
+    const vtxt = run.verified ? "✓ DONE" : "⚠ "+(run.final_lane||"ESCALATE");
+    card.appendChild(el("div","krun-h",
+      `<span class="q">${run.question||""}</span>`+
+      `<span class="v ${vcls}">${vtxt}</span>`+
+      `<span style="color:#5c6f60">${run.total_ms||0}ms · ${(run.prompt_tokens||0)+(run.completion_tokens||0)}tok · r${run.rounds||0}</span>`));
+    // group steps by lane
+    const lanes = el("div","klanes");
+    const used = LANE_ORDER.filter(L => (run.steps||[]).some(s=>s.lane===L));
+    used.forEach((L,i)=>{
+      const lane = el("div","klane");
+      lane.appendChild(el("div","ln",L));
+      (run.steps||[]).filter(s=>s.lane===L).forEach(s=>{
+        const cls = s.status==="fail" ? " fail" : (s.status==="skip" ? " skip" : "");
+        const tok = (s.completion_tokens||s.prompt_tokens) ? `${s.prompt_tokens||0}/${s.completion_tokens||0}t · ` : "";
+        lane.appendChild(el("div","kcard"+cls,
+          `<b>${s.role||"system"}</b>`+
+          (s.model?`<div class="cm">${shortModel(s.model)}</div>`:"")+
+          (s.detail?`<div class="cd">${(s.detail||"").slice(0,90)}</div>`:"")+
+          `<div class="cm">${tok}${s.latency_ms||0}ms${s.round?" · v"+s.round:""}</div>`));
+      });
+      lanes.appendChild(lane);
+      if(i<used.length-1) lanes.appendChild(el("div","karrow","→"));
+    });
+    card.appendChild(lanes);
+    box.appendChild(card);
+  });
+}
+function renderBaseline(d){
+  const box = document.getElementById("kbody-base");
+  if(!d || !d.runs){ box.innerHTML = '<div class="kempty">Chưa đủ dữ liệu baseline.</div>'; return; }
+  const o = d.overall || {};
+  let html = `<div style="margin-bottom:10px">`+
+    row("Tổng số lượt", d.runs)+
+    row("Pass-rate (verified)", pct(o.pass_rate))+
+    row("Tỷ lệ cần thinker", pct(o.thinking_rate))+
+    row("Tỷ lệ escalate", pct(o.escalate_rate))+
+    row("Vòng critique TB", (o.avg_rounds??0))+
+    row("Latency TB", Math.round(o.avg_total_ms||0)+"ms")+
+    `</div>`;
+  const seats = d.seats || {};
+  Object.keys(seats).forEach(role=>{
+    const a = seats[role];
+    html += `<div class="kbase-seat"><div class="nm">${role}</div>`+
+      `<div class="st">${a.calls} calls · ${a.avg_ms}ms TB · ${a.avg_completion_tokens} tok out TB`+
+      (a.fail?` · ${a.fail} fail`:"")+(a.skip?` · ${a.skip} skip`:"")+`</div></div>`;
+  });
+  box.innerHTML = html;
+}
+function row(l,v){ return `<div class="kbase-row"><span class="lbl">${l}</span><span class="val">${v}</span></div>`; }
+function pct(x){ return ((x||0)*100).toFixed(0)+"%"; }
+
+// ══ LIVE per-turn pipeline — VERTICAL timeline (top→bottom) ══════════════
+// Each turn renders ONE vertical timeline: a spine on the left with a node per
+// stage, stacked top→bottom. Each step is a CLICKABLE card — click to expand a
+// drawer showing the seat's REAL output PLUS that seat's historical baseline
+// (avg latency / tokens / calls across all past runs). This is the readable,
+// top-down view anh asked for.
+let LIVE = { seats:{}, domain:"", t0:0, n:0, baseline:null };
+
+// Friendly stage labels (clean, no circled-number prefixes).
+const LANE_LABEL = {
+  TRIAGE:"Triage — phân loại", GATHER:"Thu thập bằng chứng",
+  THINK:"Thinker — lập kế hoạch", WRITE:"Writer — soạn trả lời",
+  CRITIQUE:"Critique — kiểm chất lượng", ESCALATE:"Escalate"
+};
+const STAGE_ICON = { TRIAGE:"◆", GATHER:"🔎", THINK:"💭", WRITE:"✎", CRITIQUE:"⚖", ESCALATE:"⚠" };
+// which logical seat owns each stage (for the baseline lookup in the drawer).
+const STAGE_SEAT = { TRIAGE:"orchestrator", GATHER:"system", THINK:"thinker",
+  WRITE:"writer", CRITIQUE:"orchestrator", ESCALATE:"system" };
+
+// The orchestrator emits a "TRIAGE/system" step for the GATHER phase; relabel it.
+function laneOf(ev){
+  if(ev.lane==="TRIAGE" && ev.role==="system") return "GATHER";
+  return ev.lane;
+}
+
+function liveReset(question){
+  LIVE = { seats:{}, domain:"", t0:performance.now(), n:0, baseline:null };
+  const box = document.getElementById("kbody-live");
+  box.innerHTML = `<div class="lq">“${question}”</div><div class="ltl" id="ltl"></div>`;
+}
+function liveStart(ev){
+  LIVE.seats = ev.seats || {}; LIVE.domain = ev.domain || "";
+  loadRoles();
+  // prefetch the baseline once so the per-seat history is ready when anh clicks.
+  fetch("/api/baseline", KAUTH).then(r=>r.json()).then(d=>{ LIVE.baseline = d; }).catch(()=>{});
+}
+
+// Append one step as a node+card on the vertical timeline.
+function liveStep(ev){
+  const lane = laneOf(ev);
+  const tl = document.getElementById("ltl"); if(!tl) return;
+  const role = ev.role || "system";
+  const stateCls = ev.status==="fail" ? "fail" : (ev.status==="skip" ? "skip" : "done");
+  const t = ((performance.now()-LIVE.t0)/1000).toFixed(1);
+  const tok = (ev.completion_tokens||ev.prompt_tokens)
+    ? `${ev.prompt_tokens||0} in / ${ev.completion_tokens||0} out tok · ` : "";
+  const content = (ev.content||"").trim();
+  const id = "ls-"+(LIVE.n++);
+  const step = el("div","lstep "+stateCls);
+  const seatLabel = ["orchestrator","thinker","writer"].includes(role)
+    ? `${role} · ${shortModel(ev.model||LIVE.seats[role]||"")}` : role;
+  step.innerHTML =
+    `<div class="lstep-card" onclick="toggleStep('${id}')">`+
+      `<div class="ls-h">`+
+        `<span class="ls-stage">${STAGE_ICON[lane]||"•"} ${LANE_LABEL[lane]||lane}</span>`+
+        `<span class="ls-seat">${seatLabel}</span>`+
+        `<span class="ls-t">${t}s${ev.latency_ms?" · "+ev.latency_ms+"ms":""}</span>`+
+        `<span class="ls-chev">▸</span>`+
+      `</div>`+
+      `<div class="ls-meta">${tok}vòng ${ev.round||0}${ev.status==="skip"?" · (bỏ qua)":(ev.status==="fail"?" · ✗ lỗi":"")}</div>`+
+      `<div class="ls-detail" id="${id}">`+
+        (content?`<div class="ls-out">${liveContent(lane,content)}</div>`:`<div class="ls-out" style="color:#5c6f60">(không có nội dung)</div>`)+
+        liveBaseline(STAGE_SEAT[lane]||role)+
+      `</div>`+
+    `</div>`;
+  tl.appendChild(step);
+  document.getElementById("kbody-live").scrollTop = 1e9;
+}
+
+// Toggle the detail drawer of a step (and rotate its chevron).
+function toggleStep(id){
+  const d = document.getElementById(id); if(!d) return;
+  d.parentElement.classList.toggle("exp");
+}
+
+// Render the historical baseline for a seat inside the drawer (from /api/baseline).
+function liveBaseline(seat){
+  const b = LIVE.baseline; if(!b || !b.seats || !b.seats[seat]) return "";
+  const a = b.seats[seat];
+  const cell = (n,k)=>`<div class="ls-bm"><div class="n">${n}</div><div class="k">${k}</div></div>`;
+  return `<div class="ls-base"><div class="ls-base-t">📊 Baseline lịch sử — ghế ${seat}</div>`+
+    `<div class="ls-base-g">`+
+      cell(a.calls, "lượt gọi")+
+      cell((a.avg_ms||0)+"ms", "latency TB")+
+      cell(a.avg_completion_tokens||0, "tok out TB")+
+      (a.fail?cell(a.fail,"lỗi"):"")+
+    `</div></div>`;
+}
+
+function liveContent(lane, content){
+  if(lane==="TRIAGE"){
+    try { const d=JSON.parse(content);
+      return Object.entries(d).map(([k,v])=>`<span class="chip">${k}=${v}</span>`).join(" ");
+    } catch(_){}
+  }
+  if(lane==="GATHER"){ return `<pre class="ls-src">${content.replace(/</g,"&lt;")}</pre>`; }
+  // The monitor shows TEXT only — strip any ```chart block so it doesn't build a
+  // duplicate (dead, w=0) chart placeholder. The real chart renders once in the
+  // answer bubble via renderAnswer→activateCharts.
+  const noChart = (content||"").replace(/```chart\s*[\s\S]*?```/g, "");
+  return mdToHtml(noChart);
+}
+
+function liveFinish(done){
+  const tl = document.getElementById("ltl"); if(!tl) return;
+  const ok = done.verified;
+  const step = el("div","lstep "+(ok?"done":"fail")+" final");
+  step.innerHTML =
+    `<div class="lstep-card final">`+
+      `<div class="ls-h">`+
+        `<span class="ls-stage">${ok?"✓":"⚠"} ${ok?"Hoàn tất — đã verify":"Kết thúc — chưa đạt verify"}</span>`+
+        `<span class="ls-t">${done.rounds||0} vòng · ${(done.sources||[]).length} nguồn</span>`+
+      `</div></div>`;
+  tl.appendChild(step);
+  document.getElementById("kbody-live").scrollTop = 1e9;
+}
+
+// ══ In-bubble "thinking step-by-step" (thay thanh 3 chấm chờ) ════════════
+// Mỗi SSE event → 1 dòng trạng thái thân thiện, nối dần trong bong bóng chat.
+function thinkHtml(think){
+  const rows = think.steps.map((s,i)=>{
+    const last = i === think.steps.length-1;
+    const ic = last ? '<span class="tk-spin"></span>' : '<span class="tk-ok">✓</span>';
+    return `<div class="tk-row${last?' tk-cur':''}">${ic}<span class="tk-tx">${s}</span></div>`;
+  }).join("");
+  return `<div class="tk">${rows||'<div class="tk-row tk-cur"><span class="tk-spin"></span><span class="tk-tx">Đang khởi động…</span></div>'}</div>`;
+}
+function pushThink(bubble, think, line){
+  if(!line) return;
+  // tránh lặp y hệt dòng trước
+  if(think.steps[think.steps.length-1] === line) return;
+  think.steps.push(line);
+  bubble.innerHTML = thinkHtml(think);
+  stream.scrollTop = stream.scrollHeight;
+}
+// Map 1 event → 1 câu tiếng Việt dễ hiểu (không lộ thuật ngữ kỹ thuật).
+function thinkLine(type, ev){
+  if(type === "start") return "Đã hiểu câu hỏi, bắt đầu xử lý…";
+  if(type === "react"){
+    const act = ev.action || "";
+    if(act === "web_search") return `Đang tìm trên web: “${(ev.action_input||"").slice(0,50)}”`;
+    if(act === "fetch_url")  return "Đang đọc tài liệu chính thức…";
+    if(act === "search_kb")  return "Đang tra cứu kho tài liệu nội bộ…";
+    if(act === "finish")     return "Đã thu thập đủ thông tin.";
+    return "Đang suy luận bước tiếp theo…";
+  }
+  if(type === "step"){
+    const lane = ev.lane || ev.role || "";
+    const st = ev.status || "";
+    if(lane === "TRIAGE")   return "Phân loại câu hỏi & xác định hướng trả lời…";
+    if(lane === "THINK")    return st==="skip" ? null : "Đang lập kế hoạch trả lời…";
+    if(lane === "GATHER")   return "Đang thu thập bằng chứng…";
+    if(lane === "WRITE")    return "Đang soạn câu trả lời có trích nguồn…";
+    if(lane === "CRITIQUE") return st==="fail" ? "Phát hiện điểm chưa đạt → đang viết lại…"
+                                               : "Đang kiểm tra chất lượng & độ chính xác…";
+    if(lane === "ESCALATE") return "Chưa đủ dữ liệu chắc chắn — chuẩn bị phương án an toàn…";
+    return null;
+  }
+  return null;
+}
+</script>
+</body>
+</html>

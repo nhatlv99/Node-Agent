@@ -1,0 +1,32 @@
+# ── Secrets — NEVER commit ───────────────────────────────────────────────────
+# MaaS / gateway API keys. serve.py reads the key from NODE_AGENT_API_KEY,
+# NODE_AGENT_KEY_FILE, or ~/.node_agent_maas_key — none of which live in the repo.
+.node_agent_maas_key
+*.key
+*key*.txt
+Apikey.txt
+.env
+.env.*
+
+# Hermes config (dev-gateway fallback holds in-house creds)
+config.yaml
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ── Runtime state (regenerated on first run) ─────────────────────────────────
+data/convo.db
+data/memory.db
+data/trace.db
+*.db
+
+# ── OS / editor noise ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

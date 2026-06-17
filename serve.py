@@ -29,28 +29,70 @@ MAAS_BASE_URL = "https://maas-llm-aiplatform-hcm.api.vngcloud.vn/v1"
 
 
 def _read_key_from_file(path: str) -> str:
-    """Read a bearer key from a file (first non-empty line). Never logged."""
+    """Read a bearer key from a file (first non-empty line). Never logged.
+
+    Supports BOTH a bare key file (just the key on line 1) AND a KEY=VALUE line
+    (e.g. a one-line .env), so the same reader works for Apikey.txt and .env.
+    """
     try:
         for line in Path(path).read_text(encoding="utf-8").splitlines():
             s = line.strip()
-            if s:
-                return s
+            if not s or s.startswith("#"):
+                continue
+            # `NODE_AGENT_API_KEY=sk-...` → take the value; otherwise the whole line.
+            if "=" in s and not s.startswith("="):
+                return s.split("=", 1)[1].strip().strip("'\"")
+            return s.strip("'\"")
     except OSError:
         pass
     return ""
+
+
+# Variable names accepted inside a .env file for the MaaS key (first one wins).
+_ENV_KEY_NAMES = ("NODE_AGENT_API_KEY", "MAAS_API_KEY", "AI_PLATFORM_API_KEY", "API_KEY")
+
+
+def _load_dotenv(start: Path) -> None:
+    """Load KEY=VALUE pairs from a `.env` file into os.environ (in-process only).
+
+    Looks for `.env` in the script directory first, then the current working
+    directory. Existing environment variables are NEVER overwritten (a real env
+    var or `export` always wins over the file). Values are never logged. This is
+    a tiny self-contained parser — no python-dotenv dependency needed.
+    """
+    for cand in (start / ".env", Path.cwd() / ".env"):
+        if not cand.is_file():
+            continue
+        try:
+            for line in cand.read_text(encoding="utf-8").splitlines():
+                s = line.strip()
+                if not s or s.startswith("#") or "=" not in s:
+                    continue
+                key, _, val = s.partition("=")
+                key = key.strip()
+                val = val.strip().strip("'\"")
+                if key and key not in os.environ:
+                    os.environ[key] = val
+        except OSError:
+            pass
+        return  # first .env found wins
 
 
 def _load_maas_key() -> str:
     """Resolve the MaaS API key WITHOUT hardcoding it in the repo.
 
     Precedence (in-process only, never echoed, never exported to a shell):
-      1. NODE_AGENT_API_KEY        (env — preferred for CI / VPS deploy)
+      1. NODE_AGENT_API_KEY / MAAS_API_KEY / AI_PLATFORM_API_KEY / API_KEY
+         (env — also populated from a `.env` file by _load_dotenv at startup)
       2. NODE_AGENT_KEY_FILE       (path to a key file, e.g. the Downloads/Key)
       3. ~/.node_agent_maas_key    (a local untracked file)
     """
-    k = os.environ.get("NODE_AGENT_API_KEY", "").strip()
-    if k:
-        return k
+    # .env has already been loaded into os.environ (without overwriting real env
+    # vars), so checking the env here transparently covers the .env case too.
+    for name in _ENV_KEY_NAMES:
+        k = os.environ.get(name, "").strip()
+        if k:
+            return k
     kf = os.environ.get("NODE_AGENT_KEY_FILE", "").strip()
     if kf:
         k = _read_key_from_file(kf)
@@ -98,6 +140,11 @@ def main() -> None:
         help="use the in-house gateway stand-in (Hermes config) instead of VNG MaaS",
     )
     args = ap.parse_args()
+
+    # Load a local `.env` (script dir, then cwd) into os.environ BEFORE resolving
+    # creds — without overwriting any real env var. Lets the key live in a .env
+    # file instead of an exported var or a separate key file.
+    _load_dotenv(Path(__file__).resolve().parent)
 
     if not args.no_llm:
         if args.dev_gateway:

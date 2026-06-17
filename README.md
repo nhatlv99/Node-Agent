@@ -27,11 +27,23 @@ python -m playwright install chromium
 
 serve.py đọc key MaaS theo thứ tự ưu tiên, in-process, không bao giờ echo ra shell:
 
-1. Biến môi trường `NODE_AGENT_API_KEY` (ưu tiên cho deploy)
-2. `NODE_AGENT_KEY_FILE=/đường/dẫn/tới/key.txt` (file 1 dòng chứa key)
-3. `~/.node_agent_maas_key` (file local, đã nằm trong .gitignore)
+1. Biến môi trường thật (`export ...`) — luôn ưu tiên cao nhất. Chấp nhận một
+   trong các tên: `NODE_AGENT_API_KEY` > `MAAS_API_KEY` > `AI_PLATFORM_API_KEY` > `API_KEY`
+2. File `.env` ở thư mục dự án (nạp tự động lúc khởi động, KHÔNG ghi đè env thật)
+3. `NODE_AGENT_KEY_FILE=/đường/dẫn/tới/key.txt` (file 1 dòng chứa key)
+4. `~/.node_agent_maas_key` (file local)
 
-Cách nhanh nhất:
+Cả `.env`, `*.key`, `*key*.txt`, `Apikey.txt`, `.node_agent_maas_key` đều đã nằm
+trong `.gitignore` — không bao giờ bị commit.
+
+Cách khuyến nghị (gọn nhất, dùng `.env`):
+
+```bash
+cp .env.example .env
+# rồi mở .env, dán key MaaS vào dòng NODE_AGENT_API_KEY=
+```
+
+Hoặc dùng biến môi trường:
 
 ```bash
 export NODE_AGENT_API_KEY="<dán-key-MaaS-vào-đây>"

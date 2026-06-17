@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Node Agent Assistant — GreenNode</title>
 <style>
   :root {
@@ -437,6 +437,104 @@
   .sb-item:hover .sb-del { opacity: 1; }
   .sb-del:hover { color: var(--warn); }
   .sb-empty { color: #5c6f60; font-size: 11px; text-align: center; padding: 24px 8px; line-height: 1.6; }
+
+  /* ══ RESPONSIVE — Mobile (≤ 480px) ══ */
+  @media (max-width: 480px) {
+    /* Nav */
+    .nav { padding: 12px 16px; }
+    .nav .cta { font-size: 12px; padding: 7px 12px; }
+
+    /* Hero */
+    .hero { padding: 76px 14px 28px; justify-content: flex-start; padding-top: max(76px, calc(60px + env(safe-area-inset-top, 0px))); }
+    .badge { font-size: 12px; padding: 6px 13px; margin-bottom: 20px; }
+    .badge span:last-child { font-size: 11.5px; }
+    h1.title { font-size: 28px; letter-spacing: -0.8px; margin-bottom: 10px; }
+    .subtitle { font-size: 13.5px; margin-bottom: 22px; max-width: 100%; }
+
+    /* Composer (hero) */
+    .composer { max-width: 100%; }
+    .composer textarea { font-size: 14px; padding: 13px 14px 5px; min-height: 58px; }
+    .composer .row { flex-wrap: wrap; gap: 6px; padding: 5px 10px 10px; }
+    .ctrlbar { flex: 1 1 auto; }
+    .send { font-size: 13px; padding: 8px 14px; }
+
+    /* Sample chips */
+    .samples { gap: 6px; margin-top: 14px; }
+    .chip { font-size: 11px; padding: 6px 10px; }
+
+    /* Chat view */
+    .chatview { padding: 64px 10px 0; }
+    .stream { padding: 12px 0 170px; gap: 12px; }
+    .msg { gap: 9px; }
+    .msg .av { width: 26px; height: 26px; font-size: 12px; border-radius: 7px; }
+    .bubble { font-size: 13.5px; padding: 11px 12px; border-radius: 12px; }
+    .bubble pre { font-size: 12px; padding: 10px; }
+    .meta { font-size: 10px; gap: 6px; }
+
+    /* Topbar */
+    .topbar { padding: 10px 14px; }
+    .topbar .new { font-size: 11px; padding: 5px 10px; }
+
+    /* Dock */
+    .dock {
+      padding: 10px 10px 0;
+      padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    }
+    .dock .inner { padding: 0; }
+    .ai-note { font-size: 10px; margin-top: 7px; }
+
+    /* Kanban toggle & panel */
+    .kbtoggle { right: 10px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); padding: 7px 11px; font-size: 11px; }
+    .kpanel {
+      right: 0; left: 0; bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+      width: 100%; max-width: 100%; border-radius: 16px 16px 0 0;
+      max-height: 65vh;
+    }
+
+    /* Sidebar — near-full width */
+    .sidebar { width: 85vw; max-width: 300px; }
+
+    /* Charts */
+    .chart-mount { height: 200px; }
+    .chart-head { padding: 10px 12px 6px; }
+
+    /* DD menu — avoid going off-screen */
+    .dd-menu { min-width: 180px; max-width: calc(100vw - 28px); }
+  }
+
+  /* ══ RESPONSIVE — Tablet / iPad (481px – 1024px) ══ */
+  @media (min-width: 481px) and (max-width: 1024px) {
+    /* Nav */
+    .nav { padding: 16px 22px; }
+
+    /* Hero */
+    .hero { padding: 84px 24px 32px; }
+    h1.title { font-size: 42px; }
+    .subtitle { font-size: 15px; max-width: 520px; }
+    .composer { max-width: min(680px, 92%); }
+    .badge { font-size: 13px; }
+
+    /* Chat view */
+    .chatview { padding: 72px 20px 0; }
+    .stream { padding-bottom: 190px; }
+
+    /* Dock */
+    .dock {
+      padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Kanban panel */
+    .kpanel { width: min(400px, calc(100vw - 28px)); }
+
+    /* Charts */
+    .chart-mount { height: 250px; }
+  }
+
+  /* ══ iOS/Android: fix 100vh jump from browser chrome ══ */
+  @supports (height: 100dvh) {
+    .hero { min-height: 100dvh; }
+    .chatview { height: 100dvh; }
+  }
 </style>
 <script src="/echarts.min.js"></script>
 </head>
@@ -1252,7 +1350,6 @@ function sendDock(){ const q=dockInput.value.trim(); if(!q)return; dockInput.val
 let MODELS = [];
 const MODE_DEFS = [
   { id:"node_assistant", icon:"🟢", label:"Node Assistant", desc:"Hỗ trợ KH GreenNode (RAG, trích nguồn)" },
-  { id:"trading_agent",  icon:"📈", label:"Trading Agent",  desc:"Nghiên cứu giao dịch (tham khảo)" },
 ];
 function shortModel(id){ return (id||"").split("/").pop(); }
 function modelById(id){ return MODELS.find(m=>m.id===id); }

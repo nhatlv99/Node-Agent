@@ -32,7 +32,7 @@ import dataclasses
 
 # ── Ceilings (the contract §3.2) ─────────────────────────────────────────────
 # GATHER_MAX raised 3→4 (2026-06-16): the THINKER seat is now minimax-m2.5, a
-# reasoning model whose ReAct evidence-gathering has higher variance than opus —
+# reasoning model whose ReAct evidence-gathering has higher variance than a more stable frontier baseline —
 # some runs picked a loose chunk and stopped one round too early, so a chart that
 # needed a second data-bearing chunk didn't get it. One extra gather round lets
 # the loop recover the missing numbers; TOTAL_LLM_MAX stays 8 as the hard ceiling.
@@ -117,6 +117,107 @@ class LoopBudget:
 
 
 # ── Unit test (runs with: python -m node_agent.loop_budget) ──────────────────
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Token-control: complexity-aware budgeting (2026-06-17)
+# Two INDEPENDENT axes — thinking depth and output length — because a vague
+# question may need deep thinking but short output (Câu 1), while a 1-vs-many
+# comparison needs both deep thinking and long output (Câu 2).
+# ─────────────────────────────────────────────────────────────────────────────
+
+# THINKING axis: gather depth + per-round thinker token budget.
+THINK_LEVELS = ("none", "low", "medium", "high")
+_THINK_ROUNDS = {"none": 0, "low": 1, "medium": 2, "high": 3}
+_THINK_PER_ROUND = {"none": 0, "low": 800, "medium": 1200, "high": 1600}
+
+# OUTPUT axis: total-turn ceiling bands the user asked for (4k/8k/12k/16k).
+OUTPUT_BANDS = ("S", "M", "L", "XL")
+_BAND_CEILING = {"S": 4000, "M": 8000, "L": 12000, "XL": 16000}
+# Writer visible-answer target per band (gemma is non-reasoning → output ≈ visible).
+_WRITER_OUT = {"S": 700, "M": 1300, "L": 2200, "XL": 3500}
+
+# Per-seat token tax (model nature, known in advance):
+#  - thinker minimax-m2.5 cannot disable thinking → hidden CoT inflates ~40%.
+#  - orchestrator qwen (thinking OFF) → cheap triage(120) + 1 judge(400).
+#  - writer gemma → 1:1 visible, no tax.
+_MINIMAX_COT_TAX = 1.4
+_ORCH_FIXED = 120 + 400  # triage JSON + one G-Eval judge
+
+
+@dataclasses.dataclass
+class TokenPlan:
+    """Concrete per-request token estimate, derived from the two axes."""
+    think_level: str
+    output_band: str
+    writer_out: int
+    thinker_total: int
+    orch_total: int
+    refine_total: int
+    total: int
+    ceiling: int
+    clamped: bool
+
+    def as_note(self) -> str:
+        flag = " CLAMPED" if self.clamped else ""
+        return (f"tokens think={self.think_level} band={self.output_band} "
+                f"writer={self.writer_out} thinker={self.thinker_total} "
+                f"orch={self.orch_total} refine={self.refine_total} "
+                f"total~{self.total}/{self.ceiling}{flag}")
+
+
+def estimate_token_budget(think_level: str, output_band: str,
+                          refine_max: int = REFINE_MAX) -> TokenPlan:
+    """Return a concrete token estimate for one request.
+
+    think_level ∈ THINK_LEVELS, output_band ∈ OUTPUT_BANDS. The total is the
+    estimated tokens the whole pipeline will spend; ceiling is the hard band
+    cap (4k/8k/12k/16k). If the estimate exceeds the ceiling we clamp the
+    writer + refine spend so the turn stays within band.
+    """
+    tl = think_level if think_level in _THINK_ROUNDS else "medium"
+    band = output_band if output_band in _BAND_CEILING else "M"
+
+    writer_out = _WRITER_OUT[band]
+    rounds = _THINK_ROUNDS[tl]
+    per = _THINK_PER_ROUND[tl]
+    thinker_total = int(per * rounds * _MINIMAX_COT_TAX)
+    orch_total = _ORCH_FIXED
+    refine_total = writer_out * refine_max
+    total = writer_out + thinker_total + orch_total + refine_total
+    ceiling = _BAND_CEILING[band]
+
+    # The band ceiling governs OUTPUT spend (writer + refine). Thinking spend is
+    # reported in `total` for visibility but is NOT charged against the output
+    # ceiling — a vague question (high think, M output) keeps a usable answer
+    # length instead of being starved by hidden CoT.
+    output_spend = writer_out + refine_total
+    clamped = False
+    if output_spend > ceiling:
+        clamped = True
+        draft = max(600, ceiling // (1 + refine_max))
+        writer_out = draft
+        refine_total = draft * refine_max
+    total = writer_out + thinker_total + orch_total + refine_total
+
+    return TokenPlan(
+        think_level=tl, output_band=band, writer_out=writer_out,
+        thinker_total=thinker_total, orch_total=orch_total,
+        refine_total=refine_total, total=total, ceiling=ceiling, clamped=clamped,
+    )
+
+
+def thinker_max_tokens(think_level: str) -> int:
+    """Per-round thinker (minimax) max_tokens; must leave room for hidden CoT."""
+    tl = think_level if think_level in _THINK_PER_ROUND else "medium"
+    base = _THINK_PER_ROUND.get(tl, 800)
+    return int(base * _MINIMAX_COT_TAX)
+
+
+def gather_rounds_for(think_level: str) -> int:
+    tl = think_level if think_level in _THINK_ROUNDS else "medium"
+    return _THINK_ROUNDS[tl]
+
+
 if __name__ == "__main__":
     b = LoopBudget()
     # Happy path: 2 gather + 1 draft + 1 judge = 4 calls, no rewrite

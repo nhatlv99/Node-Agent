@@ -1,7 +1,7 @@
 """Tier 5 — Serve layer for Node Agent Assistant.
 
 FastAPI app that exposes the T0-T4 pipeline over HTTP for the web dashboard.
-Runs in-process with the `node_agent` brain (single shared hermes-fork venv).
+Runs in-process with the `node_agent` brain (single shared venv).
 
 Design:
   - The BM25 retriever is built ONCE at startup (KB load is the slow part) and
@@ -23,7 +23,7 @@ Endpoints:
 
 Run (dev):
   cd "<workspace>"
-  hermes-fork/.venv/bin/python -m uvicorn node_agent.api:app --port 8000
+  .venv/bin/python -m uvicorn node_agent.api:app --port 8000
 """
 
 from __future__ import annotations
@@ -208,6 +208,16 @@ def ask(req: AskRequest, request: Request) -> dict:
                 "need_thinking": r.triage.need_thinking,
                 "answer_shape": r.triage.answer_shape,
                 "max_sentences": r.triage.max_sentences,
+                "route_tier": getattr(r.triage, "route_tier", "medium"),
+                "think_level": getattr(r.triage, "think_level", "medium"),
+                "output_band": getattr(r.triage, "output_band", "M"),
+                "token_plan": getattr(r.triage, "token_plan", None) and {
+                    "total": r.triage.token_plan.total,
+                    "think_ceiling": r.triage.token_plan.think_ceiling,
+                    "gather_ceiling": r.triage.token_plan.gather_ceiling,
+                    "writer_ceiling": r.triage.token_plan.writer_ceiling,
+                    "clamped": r.triage.token_plan.clamped,
+                } or None,
             },
             "rounds": r.rounds,
             "trace": r.trace,

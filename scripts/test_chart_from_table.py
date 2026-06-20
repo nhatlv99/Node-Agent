@@ -5,7 +5,7 @@ Proves: (1) a same-unit column → chart with numbers FROM the table (no fabrica
 (2) a mixed-unit spec table → NO chart (ship table alone, never gently lie);
 (3) a single-row / no-number table → NO chart.
 
-Run: hermes-fork/.venv/bin/python scripts/test_chart_from_table.py
+Run: .venv/bin/python scripts/test_chart_from_table.py
 """
 from __future__ import annotations
 

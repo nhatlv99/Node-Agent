@@ -11,7 +11,7 @@ Writes scripts/e2e_chart_report.md after EACH case so Nhật can follow live.
 
 Run (background):
   NODE_AGENT_KEY_FILE=... already set on the server; this only needs the token.
-  hermes-fork/.venv/bin/python scripts/test_e2e_charts.py
+  .venv/bin/python scripts/test_e2e_charts.py
 
 Env:
   NA_BASE                default http://127.0.0.1:8077

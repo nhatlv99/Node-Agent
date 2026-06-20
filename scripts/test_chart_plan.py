@@ -4,7 +4,7 @@
 This is the single source of truth for "when 1 chart, when many, what type".
 It runs OFFLINE (no gateway, no LLM, instant) — `_plan_charts` is pure.
 
-Run: hermes-fork/.venv/bin/python scripts/test_chart_plan.py
+Run: .venv/bin/python scripts/test_chart_plan.py
 """
 from __future__ import annotations
 

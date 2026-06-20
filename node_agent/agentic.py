@@ -400,7 +400,7 @@ def run_loop(
     from .reason import build_messages
     messages = build_messages(question, hits, system_prompt,
                               history=history, memory_preamble=memory_preamble)
-    # Dynamic budget: multi-part / table answers need more room (haiku truncated
+    # Dynamic budget: multi-part / table answers need more room (small orchestrator model truncated
     # a 3-part answer at 1024). Scale with #intents and evidence volume.
     max_tokens = 1024
     if len(intents) >= 2:

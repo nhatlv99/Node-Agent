@@ -14,7 +14,7 @@ This module uses Playwright (Chromium) when available. It degrades honestly:
     LINK-ONLY source (cite the official URL) instead of crashing.
 
 INSTALL (user runs these — terminal is gatekept; agent writes, user installs):
-    cd "/mnt/e/Hackathon - Node Agent Assistant/hermes-fork"
+    cd "/mnt/e/Node Agent Src"
     uv pip install playwright
     .venv/bin/python -m playwright install chromium
 

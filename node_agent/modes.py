@@ -13,7 +13,7 @@ of truth:
 2. MODELS — the gateway models Nhật can pick, ranked strong → light, each
    tagged with the contest open-weight model it best approximates. Tuning
    ("hardcore") should target a LIGHT proxy, because the real deployment runs
-   gemma-4-31b-it / qwen3-27b / minimax-m2.5 — all light. Tuning on opus would
+   gemma-4-31b-it / qwen3-27b / minimax-m2.5 — all light. Tuning against a frontier model would
    hide failures the light models actually make.
 """
 

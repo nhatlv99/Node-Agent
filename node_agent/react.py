@@ -11,7 +11,7 @@ Why JSON-action emulation (not native function-calling): the VNG MaaS / gateway
 models are plain OpenAI-compatible chat endpoints with no guaranteed tool-call
 schema. So each round we ask the thinker to emit ONE strict JSON action; we
 parse it, run the tool, summarize the result, and feed it back. This runs on
-ANY chat model (gemma/qwen/minimax/haiku) — no SDK, no tool-call API needed.
+ANY chat model (gemma/qwen/minimax/orchestrator model) — no SDK, no tool-call API needed.
 
 TOOLS the model may call (kept tiny + safe — read-only, GreenNode-scoped):
   web_search(query)   live web (SearXNG→DDG auto), official domains first
@@ -98,11 +98,33 @@ def _make_tools(retr) -> dict[str, Callable]:
     def search_kb(query: str) -> list[Evidence]:
         return collect(kb_search(query, limit=6))
 
-    return {"web_search": web_search, "fetch_url": fetch_url, "search_kb": search_kb}
+    def compare_products(query: str) -> list[Evidence]:
+        out = []
+        seen = set()
+        try:
+            for h in retr.search(query, k=10):
+                url = getattr(h, "url", "") or ""
+                txt = (getattr(h, "text", "") or "").strip()
+                if not txt or not url:
+                    continue
+                if "greennode" not in url and "vngcloud" not in url:
+                    continue
+                sig = (url, txt[:120])
+                if sig in seen:
+                    continue
+                seen.add(sig)
+                out.append(Evidence(url=url, title=getattr(h, "title", url) or url, text=txt[:2200], engine="compare_products", official=True))
+                if len(out) >= 6:
+                    break
+        except Exception:
+            pass
+        return out
+
+    return {"web_search": web_search, "fetch_url": fetch_url, "search_kb": search_kb, "compare_products": compare_products}
 
 
 # ── Action parsing (robust to messy model output) ────────────────────────────
-_ACTIONS = ("web_search", "fetch_url", "search_kb", "finish")
+_ACTIONS = ("web_search", "fetch_url", "search_kb", "compare_products", "finish")
 
 
 def _parse_action(text: str) -> tuple[str, str, str]:
@@ -175,12 +197,13 @@ _SYS = (
     "Nhiệm vụ: THU THẬP đủ bằng chứng từ nguồn CHÍNH THỨC để trả lời câu hỏi, KHÔNG tự trả lời ở bước này.\n\n"
     "Mỗi lượt, suy nghĩ rồi chọn ĐÚNG MỘT hành động, trả về DUY NHẤT một JSON (không thêm chữ nào ngoài JSON):\n"
     '{\"thought\":\"<suy luận ngắn: đang thiếu gì, cần tra gì>\",'
-    '\"action\":\"web_search|fetch_url|search_kb|finish\",'
+    '\"action\":\"web_search|fetch_url|search_kb|compare_products|finish\",'
     '\"action_input\":\"<truy vấn tìm kiếm HOẶC url để tải HOẶC rỗng nếu finish>\"}\n\n'
     "QUY TẮC:\n"
     "- web_search: tìm trên web (ưu tiên greennode.ai, helpdesk.vngcloud.vn, docs.vngcloud.vn).\n"
     "- fetch_url: khi đã thấy 1 URL hứa hẹn trong observation, TẢI nó để đọc nội dung chi tiết (rất quan trọng với trang helpdesk/Zoho chỉ có tiêu đề).\n"
     "- search_kb: tra kho nội bộ khi web không có.\n"
+    "- compare_products: khi câu hỏi là so sánh hoặc hỏi thông số, tra KB theo kiểu đối chiếu có cấu trúc TRƯỚC (nhanh, chính xác số liệu).\n"
     "- finish: CHỈ khi đã có nội dung CHI TIẾT đủ để trả lời (không phải chỉ tiêu đề).\n"
     "- Nếu observation chỉ có tiêu đề/đường link mà chưa có bước/chi tiết → PHẢI fetch_url trang đó, ĐỪNG finish.\n"
     "- Tối đa vài lượt, ưu tiên hiệu quả."
@@ -194,6 +217,7 @@ def run_react(
     *,
     model: str,
     max_rounds: int = MAX_AGENT_ROUNDS,
+    thinker_max_tokens: int = 1200,
     emit: Optional[Callable] = None,
     budget: Optional["LoopBudget"] = None,
 ) -> ReactResult:
@@ -235,7 +259,7 @@ def run_react(
             # be disabled (it spends ~200 tokens reasoning before the visible JSON
             # action). At 320 tokens it ran out mid-thought → truncated/empty
             # action. Give it room so the ReAct action survives the hidden CoT.
-            res = provider.chat(transcript, temperature=0.1, max_tokens=1200, model=model)
+            res = provider.chat(transcript, temperature=0.1, max_tokens=thinker_max_tokens, model=model)
             raw = res.text.strip()
             pt, ct = res.prompt_tokens, res.completion_tokens
             if budget is not None:

@@ -70,6 +70,10 @@ TRIAGE_OUTPUT_SCHEMA: dict[str, Any] = {
         "answer_shape":  {"type": "string",
                           "enum": ["short", "bullets", "table", "steps"]},
         "max_sentences": {"type": "integer", "minimum": 1, "maximum": 20},
+            "route_tier": {"type": "string", "enum": ["light", "medium", "heavy"]},
+            "think_level": {"type": "string", "enum": ["none", "low", "medium", "high"]},
+            "output_band": {"type": "string", "enum": ["S", "M", "L", "XL"]},
+            "token_plan": {"type": ["object", "null"]},
     },
     "required": ["intent", "need_thinking", "answer_shape"],
 }

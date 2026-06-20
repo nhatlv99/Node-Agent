@@ -4,7 +4,7 @@ type, run through the deterministic planner `_plan_charts`. Exposes HONESTLY
 which of the 16 renderer types the planner can actually produce, and which it
 cannot (and therefore depend on the model's own discretion or another mode).
 
-Run: hermes-fork/.venv/bin/python scripts/test_chart_matrix.py
+Run: .venv/bin/python scripts/test_chart_matrix.py
 """
 from __future__ import annotations
 

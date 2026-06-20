@@ -1,8 +1,8 @@
 """Tier MEM — conversation + long-term memory for Node Agent Assistant.
 
-Two layers, modeled on Hermes' memory pattern (prefetch before a turn, sync
+Two layers, modeled on the agent memory pattern (prefetch before a turn, sync
 after) but self-contained so the node_agent pipeline stays independent of the
-Hermes run-loop.
+agent run-loop.
 
 1. ConversationMemory (short-term, per session)
    - Holds the recent user/assistant turns of ONE chat session in memory.

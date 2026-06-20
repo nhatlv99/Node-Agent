@@ -1,0 +1,1906 @@
+[
+  {
+    "id": "TC001",
+    "category": "services-overview",
+    "question": "GreenNode có những dịch vụ gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "GreenNode",
+      "dịch vụ"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "overview/vague question should think high, medium output"
+  },
+  {
+    "id": "TC002",
+    "category": "services-overview",
+    "question": "GreenNode đang cung cấp các nhóm sản phẩm nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "GreenNode",
+      "dịch vụ"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "overview/vague question should think high, medium output"
+  },
+  {
+    "id": "TC003",
+    "category": "services-overview",
+    "question": "Tổng quan portfolio dịch vụ của GreenNode gồm gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "GreenNode",
+      "dịch vụ"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "overview/vague question should think high, medium output"
+  },
+  {
+    "id": "TC004",
+    "category": "services-overview",
+    "question": "GreenNode phục vụ những workload nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "GreenNode",
+      "dịch vụ"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "overview/vague question should think high, medium output"
+  },
+  {
+    "id": "TC005",
+    "category": "services-overview",
+    "question": "Nếu mới tìm hiểu GreenNode thì nên bắt đầu từ những dịch vụ nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "GreenNode",
+      "dịch vụ"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "overview/vague question should think high, medium output"
+  },
+  {
+    "id": "TC006",
+    "category": "services-overview",
+    "question": "GreenNode có dịch vụ AI Cloud nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "GreenNode",
+      "dịch vụ"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "overview/vague question should think high, medium output"
+  },
+  {
+    "id": "TC007",
+    "category": "services-overview",
+    "question": "GreenNode có hạ tầng GPU, Kubernetes và lưu trữ không?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "GreenNode",
+      "dịch vụ"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "overview/vague question should think high, medium output"
+  },
+  {
+    "id": "TC008",
+    "category": "services-overview",
+    "question": "GreenNode khác gì so với cloud thông thường về dải sản phẩm?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "GreenNode",
+      "dịch vụ"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "overview/vague question should think high, medium output"
+  },
+  {
+    "id": "TC009",
+    "category": "services-overview",
+    "question": "GreenNode có dịch vụ cho AI inference và training không?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "GreenNode",
+      "dịch vụ"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "overview/vague question should think high, medium output"
+  },
+  {
+    "id": "TC010",
+    "category": "services-overview",
+    "question": "GreenNode có các dịch vụ automation/document processing nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "GreenNode",
+      "dịch vụ"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "overview/vague question should think high, medium output"
+  },
+  {
+    "id": "TC011",
+    "category": "product-overview",
+    "question": "NVIDIA H100 - Ignite AI innitiatives with HGX H100 in the Cloud | GreenNode của GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "h100"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "single product overview"
+  },
+  {
+    "id": "TC012",
+    "category": "product-usecase",
+    "question": "NVIDIA H100 - Ignite AI innitiatives with HGX H100 in the Cloud | GreenNode phù hợp cho use case nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "h100"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC013",
+    "category": "product-benefits",
+    "question": "Lợi ích chính của NVIDIA H100 - Ignite AI innitiatives with HGX H100 in the Cloud | GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "h100"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC014",
+    "category": "product-overview",
+    "question": "GPU Compute - High-end NVIDIA GPUs for Enterprises của GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "gpu"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "single product overview"
+  },
+  {
+    "id": "TC015",
+    "category": "product-usecase",
+    "question": "GPU Compute - High-end NVIDIA GPUs for Enterprises phù hợp cho use case nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "gpu"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC016",
+    "category": "product-benefits",
+    "question": "Lợi ích chính của GPU Compute - High-end NVIDIA GPUs for Enterprises là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "gpu"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC017",
+    "category": "product-overview",
+    "question": "AI Platform - One-stop AI platform for AI model training and deployment của GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "ai"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "single product overview"
+  },
+  {
+    "id": "TC018",
+    "category": "product-usecase",
+    "question": "AI Platform - One-stop AI platform for AI model training and deployment phù hợp cho use case nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "ai"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC019",
+    "category": "product-benefits",
+    "question": "Lợi ích chính của AI Platform - One-stop AI platform for AI model training and deployment là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "ai"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC020",
+    "category": "product-overview",
+    "question": "Serverless AI Model - Deploy AI Applications at A Scale của GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "model"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "single product overview"
+  },
+  {
+    "id": "TC021",
+    "category": "product-usecase",
+    "question": "Serverless AI Model - Deploy AI Applications at A Scale phù hợp cho use case nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "model"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC022",
+    "category": "product-benefits",
+    "question": "Lợi ích chính của Serverless AI Model - Deploy AI Applications at A Scale là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "model"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC023",
+    "category": "product-overview",
+    "question": "GreenNode IDP - AI-Powered Intelligent Document Processing Solution của GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "greennode"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "single product overview"
+  },
+  {
+    "id": "TC024",
+    "category": "product-usecase",
+    "question": "GreenNode IDP - AI-Powered Intelligent Document Processing Solution phù hợp cho use case nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "greennode"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC025",
+    "category": "product-benefits",
+    "question": "Lợi ích chính của GreenNode IDP - AI-Powered Intelligent Document Processing Solution là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "greennode"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC026",
+    "category": "product-overview",
+    "question": "GreenNode AgentBase - Fully Managed Platform for AI Agents của GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "agentbase"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "single product overview"
+  },
+  {
+    "id": "TC027",
+    "category": "product-usecase",
+    "question": "GreenNode AgentBase - Fully Managed Platform for AI Agents phù hợp cho use case nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "agentbase"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC028",
+    "category": "product-benefits",
+    "question": "Lợi ích chính của GreenNode AgentBase - Fully Managed Platform for AI Agents là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "agentbase"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC029",
+    "category": "product-overview",
+    "question": "CPU instances - Virtual machines built for every business need của GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "cpu"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "single product overview"
+  },
+  {
+    "id": "TC030",
+    "category": "product-usecase",
+    "question": "CPU instances - Virtual machines built for every business need phù hợp cho use case nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "cpu"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC031",
+    "category": "product-benefits",
+    "question": "Lợi ích chính của CPU instances - Virtual machines built for every business need là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "cpu"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC032",
+    "category": "product-overview",
+    "question": "Object storage - Object storage built for performance and scale của GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "object"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "single product overview"
+  },
+  {
+    "id": "TC033",
+    "category": "product-usecase",
+    "question": "Object storage - Object storage built for performance and scale phù hợp cho use case nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "object"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC034",
+    "category": "product-benefits",
+    "question": "Lợi ích chính của Object storage - Object storage built for performance and scale là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "object"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC035",
+    "category": "gpu",
+    "question": "GPU H100 của GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "H100"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC036",
+    "category": "gpu",
+    "question": "VRAM của H100 là bao nhiêu?",
+    "expect_intent": "pricing",
+    "expect_tier": "light",
+    "expect_think_level": "none",
+    "expect_output_band": "S",
+    "expect_contains": [
+      "H100"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC037",
+    "category": "gpu",
+    "question": "Băng thông nhớ của H100 là bao nhiêu?",
+    "expect_intent": "spec",
+    "expect_tier": "light",
+    "expect_think_level": "none",
+    "expect_output_band": "S",
+    "expect_contains": [
+      "H100"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC038",
+    "category": "gpu",
+    "question": "VRAM của H200 là bao nhiêu?",
+    "expect_intent": "spec",
+    "expect_tier": "light",
+    "expect_think_level": "none",
+    "expect_output_band": "S",
+    "expect_contains": [
+      "GPU"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC039",
+    "category": "gpu",
+    "question": "So sánh H100 và H200",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "low",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "H100"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC040",
+    "category": "gpu",
+    "question": "So sánh VRAM và băng thông của H100 với H200",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "low",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "H100"
+    ],
+    "expect_refusal": false,
+    "expect_chart": true,
+    "notes": ""
+  },
+  {
+    "id": "TC041",
+    "category": "gpu",
+    "question": "Bảng giá thuê GPU H100 bao nhiêu?",
+    "expect_intent": "pricing",
+    "expect_tier": "light",
+    "expect_think_level": "none",
+    "expect_output_band": "S",
+    "expect_contains": [
+      "H100"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC042",
+    "category": "gpu",
+    "question": "GreenNode có các dòng GPU nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "GPU"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC043",
+    "category": "gpu",
+    "question": "GPU Compute của GreenNode dùng cho workload gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "GPU"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC044",
+    "category": "gpu",
+    "question": "NVIDIA H100 phù hợp training hay inference?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "H100"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC045",
+    "category": "gpu",
+    "question": "So sánh tất cả các dòng GPU của GreenNode với nhau",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "GPU"
+    ],
+    "expect_refusal": false,
+    "expect_chart": true,
+    "notes": ""
+  },
+  {
+    "id": "TC046",
+    "category": "gpu",
+    "question": "So sánh H100 với tất cả GPU còn lại của GreenNode",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "H100"
+    ],
+    "expect_refusal": false,
+    "expect_chart": true,
+    "notes": ""
+  },
+  {
+    "id": "TC047",
+    "category": "vks-kubernetes",
+    "question": "GreenNode có hỗ trợ Kubernetes không?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "Kubernetes"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC048",
+    "category": "vks-kubernetes",
+    "question": "VKS của GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "VKS"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC049",
+    "category": "vks-kubernetes",
+    "question": "Managed Kubernetes của GreenNode có tính năng gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "Kubernetes"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC050",
+    "category": "vks-kubernetes",
+    "question": "Control Plane của VKS được quản lý như thế nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "VKS"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC051",
+    "category": "vks-kubernetes",
+    "question": "VKS có hỗ trợ Multi-AZ Self-Healing không?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "VKS"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC052",
+    "category": "vks-kubernetes",
+    "question": "VKS có dùng Calico hay Cilium không?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "VKS"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC053",
+    "category": "vks-kubernetes",
+    "question": "VKS có hỗ trợ private cluster/private node group không?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "VKS"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC054",
+    "category": "vks-kubernetes",
+    "question": "VKS có built-in container registry không?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "VKS"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC055",
+    "category": "vks-kubernetes",
+    "question": "GreenNode giúp startup không có DevOps triển khai Kubernetes như thế nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "Kubernetes"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC056",
+    "category": "vks-kubernetes",
+    "question": "Cách tạo cluster Kubernetes trên GreenNode",
+    "expect_intent": "howto",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "Kubernetes"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC057",
+    "category": "vks-kubernetes",
+    "question": "So sánh VKS với tự vận hành Kubernetes",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "Kubernetes"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC058",
+    "category": "vks-kubernetes",
+    "question": "So sánh VKS với dịch vụ Kubernetes tự quản",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "Kubernetes"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC059",
+    "category": "maas-platform",
+    "question": "MaaS của GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "MaaS"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC060",
+    "category": "maas-platform",
+    "question": "MaaS phù hợp cho use case nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "MaaS"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC061",
+    "category": "maas-platform",
+    "question": "Lợi ích chính của MaaS là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "MaaS"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC062",
+    "category": "maas-platform",
+    "question": "MaaS có những tính năng gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "MaaS"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC063",
+    "category": "maas-platform",
+    "question": "So sánh MaaS với lựa chọn tự triển khai",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "MaaS"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC064",
+    "category": "agentbase",
+    "question": "AgentBase của GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "AgentBase"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC065",
+    "category": "agentbase",
+    "question": "AgentBase phù hợp cho use case nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "AgentBase"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC066",
+    "category": "agentbase",
+    "question": "Lợi ích chính của AgentBase là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "AgentBase"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC067",
+    "category": "agentbase",
+    "question": "AgentBase có những tính năng gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "AgentBase"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC068",
+    "category": "agentbase",
+    "question": "So sánh AgentBase với lựa chọn tự triển khai",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "AgentBase"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC069",
+    "category": "idp",
+    "question": "IDP của GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "IDP"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC070",
+    "category": "idp",
+    "question": "IDP phù hợp cho use case nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "IDP"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC071",
+    "category": "idp",
+    "question": "Lợi ích chính của IDP là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "IDP"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC072",
+    "category": "idp",
+    "question": "IDP có những tính năng gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "IDP"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC073",
+    "category": "idp",
+    "question": "So sánh IDP với lựa chọn tự triển khai",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "IDP"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC074",
+    "category": "storage",
+    "question": "Object Storage của GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "Object"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC075",
+    "category": "storage",
+    "question": "Object Storage phù hợp cho use case nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "Object"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC076",
+    "category": "storage",
+    "question": "Lợi ích chính của Object Storage là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "Object"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC077",
+    "category": "storage",
+    "question": "Object Storage có những tính năng gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "Object"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC078",
+    "category": "storage",
+    "question": "So sánh Object Storage với lựa chọn tự triển khai",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "Object"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC079",
+    "category": "cpu",
+    "question": "CPU instances của GreenNode là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "CPU"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC080",
+    "category": "cpu",
+    "question": "CPU instances phù hợp cho use case nào?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "CPU"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC081",
+    "category": "cpu",
+    "question": "Lợi ích chính của CPU instances là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "CPU"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC082",
+    "category": "cpu",
+    "question": "CPU instances có những tính năng gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "CPU"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC083",
+    "category": "cpu",
+    "question": "So sánh CPU instances với lựa chọn tự triển khai",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "CPU"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC084",
+    "category": "instance-flavor",
+    "question": "GreenNode có bao nhiêu loại instance flavor?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "instance",
+      "flavor"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC085",
+    "category": "instance-flavor",
+    "question": "Liệt kê các instance flavor của GreenNode",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "instance",
+      "flavor"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC086",
+    "category": "instance-flavor",
+    "question": "Danh sách toàn bộ instance flavor của GreenNode",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "instance",
+      "flavor"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC087",
+    "category": "instance-flavor",
+    "question": "Phân tích chi tiết từng gói instance flavor của GreenNode",
+    "expect_intent": "general",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "instance",
+      "flavor"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC088",
+    "category": "instance-flavor",
+    "question": "Phân tích chi tiết từng gói instance flavor của GreenNode và vẽ chart",
+    "expect_intent": "general",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "XL",
+    "expect_contains": [
+      "instance",
+      "flavor"
+    ],
+    "expect_refusal": false,
+    "expect_chart": true,
+    "notes": ""
+  },
+  {
+    "id": "TC089",
+    "category": "instance-flavor",
+    "question": "So sánh các instance flavor của GreenNode với nhau",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "instance",
+      "flavor"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC090",
+    "category": "instance-flavor",
+    "question": "Nên chọn instance flavor nào cho workload phổ thông?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "instance",
+      "flavor"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC091",
+    "category": "instance-flavor",
+    "question": "Nên chọn instance flavor nào cho workload AI?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "instance",
+      "flavor"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC092",
+    "category": "instance-flavor",
+    "question": "Bảng so sánh các flavor instance của GreenNode",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "instance",
+      "flavor"
+    ],
+    "expect_refusal": false,
+    "expect_chart": true,
+    "notes": ""
+  },
+  {
+    "id": "TC093",
+    "category": "instance-flavor",
+    "question": "Instance flavor nào phù hợp khi cần tối ưu chi phí?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "high",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "instance",
+      "flavor"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC094",
+    "category": "refusal-anti-fabrication",
+    "question": "GreenNode có văn phòng ở quận mấy?",
+    "expect_intent": "",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [],
+    "expect_refusal": true,
+    "expect_chart": false,
+    "notes": "must not fabricate if corpus lacks evidence"
+  },
+  {
+    "id": "TC095",
+    "category": "refusal-anti-fabrication",
+    "question": "CEO của GreenNode là ai?",
+    "expect_intent": "",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [],
+    "expect_refusal": true,
+    "expect_chart": false,
+    "notes": "must not fabricate if corpus lacks evidence"
+  },
+  {
+    "id": "TC096",
+    "category": "refusal-anti-fabrication",
+    "question": "Giá chính xác từng giờ của H100 là bao nhiêu USD?",
+    "expect_intent": "",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [],
+    "expect_refusal": true,
+    "expect_chart": false,
+    "notes": "must not fabricate if corpus lacks evidence"
+  },
+  {
+    "id": "TC097",
+    "category": "refusal-anti-fabrication",
+    "question": "GreenNode có SLA 99.999% cho mọi dịch vụ không?",
+    "expect_intent": "",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [],
+    "expect_refusal": true,
+    "expect_chart": false,
+    "notes": "must not fabricate if corpus lacks evidence"
+  },
+  {
+    "id": "TC098",
+    "category": "refusal-anti-fabrication",
+    "question": "GreenNode có bao nhiêu nhân viên?",
+    "expect_intent": "",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [],
+    "expect_refusal": true,
+    "expect_chart": false,
+    "notes": "must not fabricate if corpus lacks evidence"
+  },
+  {
+    "id": "TC099",
+    "category": "refusal-anti-fabrication",
+    "question": "Cho tôi số điện thoại cá nhân của đội GreenNode",
+    "expect_intent": "",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [],
+    "expect_refusal": true,
+    "expect_chart": false,
+    "notes": "must not fabricate if corpus lacks evidence"
+  },
+  {
+    "id": "TC100",
+    "category": "refusal-anti-fabrication",
+    "question": "So sánh giá GreenNode với AWS theo bảng giá chi tiết từng SKU",
+    "expect_intent": "",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [],
+    "expect_refusal": true,
+    "expect_chart": false,
+    "notes": "must not fabricate if corpus lacks evidence"
+  },
+  {
+    "id": "TC101",
+    "category": "refusal-anti-fabrication",
+    "question": "GreenNode có văn bản pháp lý nào cam kết miễn phí 100% không?",
+    "expect_intent": "",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [],
+    "expect_refusal": true,
+    "expect_chart": false,
+    "notes": "must not fabricate if corpus lacks evidence"
+  },
+  {
+    "id": "TC102",
+    "category": "refusal-anti-fabrication",
+    "question": "Cho tôi roadmap nội bộ của GreenNode năm sau",
+    "expect_intent": "",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [],
+    "expect_refusal": true,
+    "expect_chart": false,
+    "notes": "must not fabricate if corpus lacks evidence"
+  },
+  {
+    "id": "TC103",
+    "category": "refusal-anti-fabrication",
+    "question": "GreenNode có những khách hàng nào ký hợp đồng bí mật?",
+    "expect_intent": "",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [],
+    "expect_refusal": true,
+    "expect_chart": false,
+    "notes": "must not fabricate if corpus lacks evidence"
+  },
+  {
+    "id": "TC104",
+    "category": "chart",
+    "question": "So sánh VRAM của H100 và H200 bằng chart",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "low",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "chart"
+    ],
+    "expect_refusal": false,
+    "expect_chart": true,
+    "notes": "only chart when data shape supports it"
+  },
+  {
+    "id": "TC105",
+    "category": "chart",
+    "question": "Vẽ biểu đồ so sánh các instance flavor của GreenNode",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "chart"
+    ],
+    "expect_refusal": false,
+    "expect_chart": true,
+    "notes": "only chart when data shape supports it"
+  },
+  {
+    "id": "TC106",
+    "category": "chart",
+    "question": "Cho tôi bảng và chart so sánh các dòng GPU của GreenNode",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "chart"
+    ],
+    "expect_refusal": false,
+    "expect_chart": true,
+    "notes": "only chart when data shape supports it"
+  },
+  {
+    "id": "TC107",
+    "category": "chart",
+    "question": "Thể hiện chênh lệch VRAM H100 và H200 bằng biểu đồ cột",
+    "expect_intent": "compare",
+    "expect_tier": "medium",
+    "expect_think_level": "low",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "chart"
+    ],
+    "expect_refusal": false,
+    "expect_chart": true,
+    "notes": "only chart when data shape supports it"
+  },
+  {
+    "id": "TC108",
+    "category": "chart",
+    "question": "So sánh các nhóm dịch vụ GreenNode bằng donut chart",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [
+      "chart"
+    ],
+    "expect_refusal": false,
+    "expect_chart": true,
+    "notes": "only chart when data shape supports it"
+  },
+  {
+    "id": "TC109",
+    "category": "chart",
+    "question": "Biểu diễn thị phần dịch vụ GreenNode bằng donut chart",
+    "expect_intent": "compare",
+    "expect_tier": "medium",
+    "expect_think_level": "low",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "không"
+    ],
+    "expect_refusal": true,
+    "expect_chart": false,
+    "notes": "only chart when data shape supports it"
+  },
+  {
+    "id": "TC110",
+    "category": "chart",
+    "question": "Vẽ line chart về giá H100 theo thời gian của GreenNode",
+    "expect_intent": "compare",
+    "expect_tier": "medium",
+    "expect_think_level": "low",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "không"
+    ],
+    "expect_refusal": true,
+    "expect_chart": false,
+    "notes": "only chart when data shape supports it"
+  },
+  {
+    "id": "TC111",
+    "category": "chart",
+    "question": "Vẽ chart so sánh tính năng VKS và tự vận hành Kubernetes",
+    "expect_intent": "compare",
+    "expect_tier": "heavy",
+    "expect_think_level": "low",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "chart"
+    ],
+    "expect_refusal": false,
+    "expect_chart": true,
+    "notes": "only chart when data shape supports it"
+  },
+  {
+    "id": "TC112",
+    "category": "multi-intent",
+    "question": "GreenNode có những dịch vụ gì và GPU H100 dùng để làm gì?",
+    "expect_intent": "",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "split_intents path, likely need_thinking"
+  },
+  {
+    "id": "TC113",
+    "category": "multi-intent",
+    "question": "So sánh H100 và H200, đồng thời cho biết GreenNode có Kubernetes không",
+    "expect_intent": "",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "split_intents path, likely need_thinking"
+  },
+  {
+    "id": "TC114",
+    "category": "multi-intent",
+    "question": "Liệt kê instance flavor và gợi ý flavor phù hợp cho AI inference",
+    "expect_intent": "",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "split_intents path, likely need_thinking"
+  },
+  {
+    "id": "TC115",
+    "category": "multi-intent",
+    "question": "Mô tả MaaS của GreenNode và so sánh với tự host model",
+    "expect_intent": "",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "split_intents path, likely need_thinking"
+  },
+  {
+    "id": "TC116",
+    "category": "multi-intent",
+    "question": "Giải thích AgentBase là gì, rồi so sánh với workflow multi-agent tự xây",
+    "expect_intent": "",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "split_intents path, likely need_thinking"
+  },
+  {
+    "id": "TC117",
+    "category": "multi-intent",
+    "question": "Cho biết Object Storage là gì và khi nào nên dùng cùng VKS",
+    "expect_intent": "",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "split_intents path, likely need_thinking"
+  },
+  {
+    "id": "TC118",
+    "category": "multi-intent",
+    "question": "Nêu các nhóm dịch vụ GreenNode, sau đó đề xuất lựa chọn cho startup",
+    "expect_intent": "",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "split_intents path, likely need_thinking"
+  },
+  {
+    "id": "TC119",
+    "category": "multi-intent",
+    "question": "VKS có gì, có private cluster không, và cách tạo cluster ra sao?",
+    "expect_intent": "",
+    "expect_tier": "heavy",
+    "expect_think_level": "high",
+    "expect_output_band": "L",
+    "expect_contains": [],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": "split_intents path, likely need_thinking"
+  },
+  {
+    "id": "TC120",
+    "category": "blog-derived",
+    "question": "Từ góc nhìn GreenNode, Green Node là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "Green"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC121",
+    "category": "blog-derived",
+    "question": "Tóm tắt ý chính bài viết \"Green Node\" của GreenNode",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "Green"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC122",
+    "category": "blog-derived",
+    "question": "Từ góc nhìn GreenNode, AP Automation in Practice: Using Intelligent Document Processing to Streamline Invoice Handling là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "AP"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC123",
+    "category": "blog-derived",
+    "question": "Tóm tắt ý chính bài viết \"AP Automation in Practice: Using Intelligent Document Processing to Streamline Invoice Handling\" của GreenNode",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "AP"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC124",
+    "category": "blog-derived",
+    "question": "Từ góc nhìn GreenNode, What Is Intelligent Document Processing (IDP)? Going Beyond OCR and Manual Data Entry là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "What"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC125",
+    "category": "blog-derived",
+    "question": "Tóm tắt ý chính bài viết \"What Is Intelligent Document Processing (IDP)? Going Beyond OCR and Manual Data Entry\" của GreenNode",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "What"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC126",
+    "category": "blog-derived",
+    "question": "Từ góc nhìn GreenNode, Data Residency vs. Data Sovereignty: Why the Difference Has Legal Consequences in Southeast Asia là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "Data"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC127",
+    "category": "blog-derived",
+    "question": "Tóm tắt ý chính bài viết \"Data Residency vs. Data Sovereignty: Why the Difference Has Legal Consequences in Southeast Asia\" của GreenNode",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "Data"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  },
+  {
+    "id": "TC128",
+    "category": "blog-derived",
+    "question": "Từ góc nhìn GreenNode, How to Govern Autonomous AI Agents in Production with an AI Agent Governance Framework là gì?",
+    "expect_intent": "general",
+    "expect_tier": "medium",
+    "expect_think_level": "medium",
+    "expect_output_band": "M",
+    "expect_contains": [
+      "How"
+    ],
+    "expect_refusal": false,
+    "expect_chart": false,
+    "notes": ""
+  }
+]

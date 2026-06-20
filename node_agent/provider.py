@@ -9,7 +9,7 @@ while the MaaS key is pending.
 Env (read at construction, never hardcoded):
   NODE_AGENT_BASE_URL   e.g. http://192.168.100.103:20128/v1
   NODE_AGENT_API_KEY    bearer key
-  NODE_AGENT_MODEL      e.g. xapi3/kr/claude-opus-4.8  (stand-in)
+  NODE_AGENT_MODEL      e.g. qwen/qwen3-5-27b  (stand-in)
                         → swap to google/gemma-4-31b-it once MaaS key lands
 
 Quirk handled (verified 2026-06-14): the in-house gateway appends

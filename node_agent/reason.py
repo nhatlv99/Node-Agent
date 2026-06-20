@@ -139,9 +139,10 @@ def build_messages(
 ) -> list[dict]:
     context = build_context_block(hits)
     user = (
-        f"NGỮ CẢNH:\n{context}\n\n---\n\n"
-        f"CÂU HỎI:\n{question}\n\n"
-        f"Trả lời dựa trên ngữ cảnh trên, trích dẫn [n] cho mỗi dữ kiện."
+        f"CÂU HỎI CẦN TRẢ LỜI (giữ đúng chủ đề):\n{question}\n\n"
+        f"NGỮ CẢNH THAM KHẢO:\n{context}\n\n---\n\n"
+        "Chỉ trả lời đúng câu hỏi trên. Không trả lời lan sang chủ đề khác. "
+        "Không bịa thông số, giá, tính năng. Trích dẫn [n] ngay sau mỗi thông tin."
     )
     sys = system_prompt or SYSTEM_PROMPT
     if memory_preamble:
@@ -193,10 +194,23 @@ class AnswerResult:
 
 
 def _sources_from_hits(hits: list[Hit]) -> list[Source]:
-    return [
-        Source(n=i, title=h.title, url=h.url, score=h.score)
-        for i, h in enumerate(hits, 1)
-    ]
+    """Build numbered source list, deduplicating by URL.
+
+    Multiple chunks from the same page (text-keyed dedup in gather lets them
+    through so number-bearing chunks survive) would otherwise render as
+    duplicate '[1] greennode.ai/pricing [3] greennode.ai/pricing' in the
+    source list. Keep the first occurrence of each URL; [n] numbering is
+    then compact and gap-free.
+    """
+    seen_urls: set[str] = set()
+    out: list[Source] = []
+    for h in hits:
+        url = h.url or ""
+        if not url or url in seen_urls:
+            continue
+        seen_urls.add(url)
+        out.append(Source(n=len(out) + 1, title=h.title, url=url, score=h.score))
+    return out
 
 
 def answer(

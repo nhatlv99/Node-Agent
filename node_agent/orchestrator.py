@@ -189,7 +189,19 @@ def _heuristic_triage(question: str) -> Triage:
     # does NOT: KB grounding already carries the number, so ReAct only added
     # ~180s of latency for nothing. Those go the fast path.
     n_obj = len(set(m.lower() for m in _COMPARABLE_RE.findall(q)))
-    need_think = multi or intent == "howto" or (intent == "compare" and n_obj >= 2)
+    # compare of PRICING/SPEC is grounded by the KB rate/spec table — it does NOT
+    # need the costly ReAct gather loop (minimax, ~tens of seconds/round, pushed a
+    # simple H100-vs-H200 price compare to 305s). Only spend ReAct on compare when
+    # the objects need multi-step web gathering (general/solution comparisons).
+    # PRICING/SPEC are always KB-grounded (rate/spec tables) — never spend the
+    # costly ReAct gather loop on them, even when phrased as a comparison
+    # ("so sánh giá H100 và H200"). ReAct only earns its ~tens-of-seconds/round
+    # cost for multi-intent, how-to, or non-priced object comparisons that truly
+    # need web gathering. This is what pulled a simple price compare to 305s.
+    need_think = (
+        intent not in ("pricing", "spec")
+        and (multi or intent == "howto" or (intent == "compare" and n_obj >= 2))
+    )
     if multi:
         max_sent += 4
     # Phase 4 routing tier (light < medium < heavy)
@@ -252,7 +264,10 @@ def _heuristic_triage(question: str) -> Triage:
     # ── OUTPUT axis ──
     if _deep_kw and (_list_kw or _one_vs_many or multi):
         output_band = 'XL'
-    elif _one_vs_many or _list_kw or multi:
+    elif _multi_svc or _one_vs_many or _list_kw or multi:
+        # Portfolio / "tổng quan dịch vụ" questions must enumerate the full set of
+        # product groups (Cloud, GPU, Storage, VKS, vDB, Platform, MaaS, VMS, IDP...),
+        # so they need an L-sized answer, not the default M that truncates the list.
         output_band = 'L'
     elif intent == 'meta' or (intent in ('pricing', 'spec') and not multi and not _list_kw and not _deep_kw and not _chart_kw):
         output_band = 'S'
@@ -260,6 +275,14 @@ def _heuristic_triage(question: str) -> Triage:
         # pricing/spec WITH a chart (or any other case) lands here at M:
         # a chart needs a few rows of context, so never squeeze it into S.
         output_band = 'M'
+
+    # Sync max_sentences to the OUTPUT BAND so the writer's "~N câu" instruction
+    # scales with how big the answer is supposed to be. Without this, a portfolio/
+    # overview question (band=L) stays capped at 4-6 câu and the writer lists only
+    # 3 of ~8 product groups. max_sent is a FLOOR for the data section; the band
+    # decides the ceiling. Keep the heuristic value if it already asks for more.
+    _BAND_SENT = {"S": 4, "M": 7, "L": 12, "XL": 18}
+    max_sent = max(max_sent, _BAND_SENT.get(output_band, max_sent))
 
     from .loop_budget import estimate_token_budget
     _tp = estimate_token_budget(think_level, output_band)
@@ -297,13 +320,25 @@ def _llm_triage(question: str, provider, model: str, base: Triage) -> Triage:
         # Re-derive the default stage from the (possibly refined) intent so the
         # psychological stage stays consistent with what the model decided.
         _, _, stage = _SHAPE_BY_INTENT.get(intent, ("short", 4, base.stage))
+        # Preserve Phase-4 routing and Phase-6 token-control fields. The LLM
+        # refine step only adjusts intent/shape/thinking; it must NOT drop the
+        # tier/band/token_plan the heuristic computed, or the API returns
+        # token_plan=None and route_tier defaults to "medium" for everything.
         return Triage(
             intent=intent,
             domain=base.domain,
             need_thinking=bool(d.get("need_thinking", base.need_thinking)),
             answer_shape=shape if shape in ("table", "bullets", "steps", "short") else base.answer_shape,
-            max_sentences=max(2, min(12, int(d.get("max_sentences", base.max_sentences)))),
+            # The LLM tends to under-estimate length ("NGẮN GỌN") and would drop
+            # max_sentences back to ~4, undoing the band-based floor the heuristic
+            # set on base. Keep the LARGER of the two so an L/XL band answer is not
+            # re-truncated by the refine step.
+            max_sentences=max(int(base.max_sentences), min(20, int(d.get("max_sentences", base.max_sentences)))),
             stage=stage,
+            route_tier=base.route_tier,
+            think_level=base.think_level,
+            output_band=base.output_band,
+            token_plan=base.token_plan,
         )
     except Exception:
         return base
@@ -647,7 +682,24 @@ def _chart_from_table(answer: str, plan: list) -> str:
     # ── BAR / HBAR / LINE / AREA — pick the richest same-unit column ──────────
     if ctype not in ("bar", "hbar", "line", "area"):
         ctype = "bar"
-    best = max(cols, key=lambda c: len([v for v in c[3] if v is not None]))
+    # Pick the column that's MEANINGFUL to chart, not just the one with the most
+    # numbers. A spec/pricing table has vCPU, RAM, vRAM, price — charting "vCPU"
+    # (16/32/64/128) is useless; the customer cares about PRICE first, then the
+    # headline capacity (vRAM). Rank columns by semantic priority, breaking ties
+    # by how many values are present.
+    def _col_priority(metric: str) -> int:
+        m = (metric or "").lower()
+        if any(k in m for k in ("giá", "price", "cost", "phí", "$", "vnd", "usd")):
+            return 4
+        if "vram" in m or "gpu" in m:
+            return 3
+        if any(k in m for k in ("ram", "memory", "bộ nhớ", "storage", "lưu trữ")):
+            return 2
+        if "vcpu" in m or "cpu" in m or "core" in m:
+            return 0  # least interesting to chart
+        return 1
+    best = max(cols, key=lambda c: (_col_priority(c[1]),
+                                    len([v for v in c[3] if v is not None])))
     ci, metric, labels, vals, unit = best
     pairs = [(labels[i] if i < len(labels) else str(i + 1), v)
              for i, v in enumerate(vals) if v is not None]
@@ -772,6 +824,61 @@ _CHART_SPEC_HINT = (
 
 
 # ── Length / shape directive — data budget + NARRATIVE GLUE + warm tone ──────
+def _synthesize_brief(question, evidence, provider, model, *, max_tokens=700):
+    """SYNTHESIZE step: the orchestrator seat (qwen, cheap, thinking-off) reads
+    the raw retrieved evidence and the user's question, and produces a compact,
+    question-anchored brief that the writer then expands into the final answer.
+
+    Why this exists: on the fast path (no thinker), the writer (gemma) received
+    raw, fragmented chunks and produced thin answers that missed parts of the
+    question. This middle step does the cross-chunk synthesis ONCE — pulling every
+    relevant fact/number that bears on the question into an ordered outline with
+    citation markers — so the writer composes a complete answer instead of
+    re-deriving structure from scattered evidence.
+
+    Anti-fabrication: the brief is built ONLY from the evidence text; the prompt
+    forbids adding any fact not present. It is internal guidance (never quoted to
+    the customer), so the downstream citation/grounding gate still governs the
+    final answer.
+    Returns a plain-text brief, or "" on any failure (caller falls back to raw
+    evidence, so this can never harden into a hard dependency).
+    """
+    if provider is None or not evidence:
+        return ""
+    blocks = []
+    for i, e in enumerate(evidence, 1):
+        txt = (getattr(e, "text", "") or "").strip()
+        if txt:
+            blocks.append(f"[{i}] {getattr(e, 'title', '') or getattr(e, 'url', '')}\n{txt[:1400]}")
+    if not blocks:
+        return ""
+    context = "\n\n".join(blocks)
+    sys_msg = (
+        "Bạn là chuyên viên phân tích của GreenNode. Nhiệm vụ: TỔNG HỢP các trích "
+        "đoạn tư liệu bên dưới thành một DÀN Ý ngắn gọn, mạch lạc, BÁM SÁT câu hỏi "
+        "của khách — để một người viết khác soạn câu trả lời hoàn chỉnh.\n"
+        "QUY TẮC:\n"
+        "- CHỈ dùng thông tin có trong tư liệu. TUYỆT ĐỐI không thêm số liệu, giá, "
+        "thông số hay tính năng không xuất hiện trong tư liệu.\n"
+        "- Gom mọi dữ kiện liên quan tới câu hỏi: liệt kê ĐẦY ĐỦ các hạng mục, con "
+        "số, mức giá, cấu hình — đừng bỏ sót ý nào trả lời được câu hỏi.\n"
+        "- Giữ marker trích dẫn [n] ngay sau mỗi dữ kiện để người viết dẫn nguồn.\n"
+        "- Trình bày bằng gạch đầu dòng theo trình tự hợp lý để trả lời câu hỏi. "
+        "KHÔNG viết thành văn xuôi hoàn chỉnh, KHÔNG chào hỏi — đây là dàn ý nội bộ.\n"
+        "- Nếu tư liệu KHÔNG đủ trả lời một phần nào, ghi rõ 'thiếu dữ liệu: ...' "
+        "thay vì bịa."
+    )
+    user_msg = f"CÂU HỎI CỦA KHÁCH:\n{question}\n\nTƯ LIỆU:\n{context}\n\nDÀN Ý TỔNG HỢP:"
+    try:
+        res = provider.chat(
+            [{"role": "system", "content": sys_msg},
+             {"role": "user", "content": user_msg}],
+            temperature=0.1, max_tokens=max_tokens, model=model)
+        return (res.text or "").strip()
+    except Exception:
+        return ""
+
+
 def _shape_directive(t: Triage) -> str:
     """Build the writer directive.
 
@@ -818,14 +925,37 @@ def _shape_directive(t: Triage) -> str:
             "- KẾT (1 câu): gợi mở hướng tìm hiểu tiếp hoặc hỏi rõ nhu cầu khách.\n"
         )
 
+    # ── KHUNG FORM 5 PHẦN BẮT BUỘC (Nhật yêu cầu) ───────────────────────────
+    # Mọi câu trả lời phải đủ 5 phần, kể cả khi dữ liệu ngắn — thiếu phần nào thì
+    # vẫn phải có tiêu đề phần đó và nói rõ "chưa có dữ liệu" thay vì bỏ trống.
+    # Phần 2 (Chart/Data) chỉ bắt buộc khi có số liệu; nếu không có thì ghi 1 câu
+    # nêu rõ chưa có số để trực quan hoá.
+    chart_clause = (
+        "2. DỮ LIỆU & BIỂU ĐỒ: trình bày số liệu chính. "
+        if t.wants_chart or t.answer_shape == "table"
+        else "2. DỮ LIỆU: nêu các dữ kiện/cột số liệu chính (nếu có). "
+    )
     base = (
-        f"\n\n# CẤU TRÚC & ĐỘ DÀI CÂU TRẢ LỜI (BẮT BUỘC)\n"
-        f"- Phần DỮ LIỆU tối đa ~{t.max_sentences} câu — súc tích, đúng phần khách hỏi.\n"
-        f"{shape_line}"
-        f"- NGOÀI phần dữ liệu, BẮT BUỘC có lớp 'dẫn dắt' để câu trả lời ấm áp, "
-        f"như một người hỗ trợ thật (KHÔNG phải dài dòng — chỉ thêm các câu sau):\n"
-        f"{glue}"
-        f"- Không lặp lại nguyên văn câu hỏi. Không chào hỏi lê thê.\n"
+        "\n\n# KHUNG CÂU TRẢ LỜI — BẮT BUỘC ĐỦ 5 PHẦN, THEO ĐÚNG THỨ TỰ\n"
+        "Trả lời theo 5 phần dưới đây. Viết liền mạch (KHÔNG cần đánh số tiêu đề "
+        "cho khách thấy), nhưng PHẢI có đủ nội dung của cả 5 phần:\n"
+        "1. GIỚI THIỆU (1-2 câu): mở đầu xác nhận đang giúp khách việc gì, nêu gọn "
+        "bối cảnh để khách thấy được hiểu. KHÔNG lặp nguyên văn câu hỏi.\n"
+        f"{chart_clause}"
+        + shape_line +
+        "   Nếu dữ liệu dạng bảng: ô thiếu ghi '—'. Nếu KHÔNG có số liệu nào: nói "
+        "rõ 'hiện chưa có số liệu cụ thể trong tài liệu' thay vì bịa.\n"
+        "3. NHẬN XÉT VỀ BẢNG BIỂU/DỮ LIỆU (1-3 câu): DIỄN GIẢI con số có ý nghĩa "
+        "gì — xu hướng, gói nào hợp nhu cầu nào, điểm đáng chú ý. KHÔNG ép khách "
+        "chọn, chỉ phân tích để khách tự quyết.\n"
+        "4. KẾT LUẬN (1-2 câu): chốt lại ý chính / khuyến nghị tổng quát bám đúng "
+        "câu hỏi của khách.\n"
+        "5. GỢI Ý MỞ (1 câu): mời bước tiếp phù hợp (vd 'Anh/Chị cần em dựng thử "
+        "cấu hình nào, hay so sánh thêm phương án khác không ạ?').\n"
+        f"- Phần DỮ LIỆU giữ súc tích (~{t.max_sentences} câu trọng tâm), nhưng "
+        "phần NHẬN XÉT + KẾT LUẬN + GỢI Ý phải LUÔN có để câu trả lời đầy đủ, "
+        "không bị cụt. Output ngắn mà thiếu các phần này là KHÔNG đạt.\n"
+        "- Lưu ý/cảnh báo (nếu cần): viết thành câu bắt đầu bằng 'Lưu ý:'.\n"
     )
 
     if t.wants_chart:
@@ -1025,7 +1155,17 @@ def run(
         # number to plot. k=12 surfaces the data-bearing chunk WITHOUT inventing
         # anything — the number still has to exist in an official chunk.
         seen_txt = set()
-        for h in retr.search(question, k=12):
+        # Broad "what services / portfolio / list everything" questions (output_band
+        # L or XL) ask the retriever to diversify: 1 chunk per page so the seed spans
+        # ALL product pages (gpu, cpu, storage, ai-platform, maas, idp...) instead of
+        # stacking several chunks from one page. Narrow questions keep the default.
+        _diversify = getattr(t, "output_band", "M") in ("L", "XL")
+        # Pricing/spec questions must surface the chunks that actually carry the
+        # rate figures, not the wordy product marketing page. prefer_price boosts
+        # currency-bearing chunks so the writer fills the price column instead of
+        # emitting an empty table + "vui lòng liên hệ".
+        _prefer_price = getattr(t, "intent", "") in ("pricing", "spec")
+        for h in retr.search(question, k=12, diversify=_diversify, prefer_price=_prefer_price):
             txt = (h.text or "").strip()
             if not txt:
                 continue
@@ -1216,6 +1356,25 @@ def run(
             s.status("skip").note("triage: no thinking needed (fast path)")
         _emit("step", content="(bỏ qua — câu đơn giản, không cần thinker)")
 
+    # ── SYNTHESIZE (orchestrator seat) ─────────────────────────────────────────
+    # Fast path (no thinker) would hand the writer raw fragmented chunks and
+    # yield a thin answer that misses parts of the question. Insert a cheap
+    # synthesis: orchestrator (qwen, thinking-off) distils ALL evidence into a
+    # question-anchored outline so the writer composes a complete answer.
+    if not plan and provider is not None and len(best_ev) >= 2:
+        with tr.step("SYNTHESIZE", roles.ORCHESTRATOR, seat_orch.model) as s:
+            if budget.can():
+                brief = _synthesize_brief(question, best_ev, provider, seat_orch.model)
+                if brief:
+                    plan = brief
+                    budget.bump("synthesize")
+                    s.note(f"tổng hợp {len(best_ev)} nguồn → dàn ý {len(brief)} ký tự")
+                    _emit("step", content="✓ đã tổng hợp tư liệu thành dàn ý cho writer")
+                else:
+                    s.status("skip").note("synthesize rỗng → dùng evidence thô")
+            else:
+                s.status("skip").note("hết ngân sách → bỏ synthesize")
+
     # ── WRITE (gemma seat) bound to shape + length ───────────────────────────
     sys_prompt = system_prompt + _shape_directive(t)
     if plan:
@@ -1368,11 +1527,24 @@ def run(
     # are judge-verified, not fabricated). _chart_from_table self-censors when no
     # single same-unit numeric column exists, so a mixed-unit spec table ships
     # without a (misleading) chart instead of forcing the model to invent data.
-    if t.wants_chart and not _CHART_BLOCK_RE.search(answer):
-        chart_md = _chart_from_table(answer, t.chart_plan)
-        if chart_md:
-            answer = answer + chart_md
+    if t.wants_chart:
+        # Code — not the model — owns the chart. The writer (gemma) often emits a
+        # ```chart block with labels/data that DON'T match the table: e.g. labels
+        # ["H100","H200"] but data [2.99] because H200 has no price. That ships a
+        # broken/misleading chart. So whenever a chart is wanted we ALWAYS rebuild
+        # it deterministically from the table and REPLACE whatever the model wrote.
+        # _chart_from_table self-censors (returns "") when no single same-unit
+        # column has >=2 values, in which case we STRIP the model's chart rather
+        # than trust it — never ship an unverified chart.
+        code_chart = _chart_from_table(answer, t.chart_plan)
+        had_model_chart = bool(_CHART_BLOCK_RE.search(answer))
+        # remove any model-emitted chart first
+        answer = _CHART_BLOCK_RE.sub("", answer).rstrip()
+        if code_chart:
+            answer = answer + code_chart
             _emit("step", content="✓ chart dựng tất định từ bảng (không bịa số)")
+        elif had_model_chart:
+            _emit("step", content="✓ đã gỡ chart model tự vẽ (dữ liệu không đủ để dựng chart đáng tin)")
     elif not t.wants_chart and _CHART_BLOCK_RE.search(answer):
         # SYMMETRIC GUARD (2026-06-17): code — not the model — decides whether a
         # chart belongs. The plan said NO chart (e.g. a single-object spec lookup

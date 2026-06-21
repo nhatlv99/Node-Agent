@@ -27,6 +27,8 @@ from pathlib import Path
 from typing import Iterable
 
 _TOKEN_RE = re.compile(r"\w+", re.UNICODE)
+# Detects a real money figure (used to surface rate tables for pricing intent).
+_PRICE_RE = re.compile(r"\$\s?\d|\d[\d.,]*\s*(?:VND|VNĐ|đồng|đ|USD|/giờ|/hour|/h\b|/tháng|/month)", re.I)
 
 
 def tokenize(text: str) -> list[str]:
@@ -100,6 +102,20 @@ _EXPANSIONS: dict[str, tuple[str, ...]] = {
     "finetune": ("training", "finetuning", "train"),
     "rag": ("retrieval", "embedding", "knowledge"),
     "vm": ("instance", "server", "compute"),
+    # Portfolio / overview bridges: broad "có những dịch vụ/sản phẩm gì" questions
+    # use abstract VN words that never appear on the (English) product pages. Map
+    # them to the concrete product-line tokens so BM25 can surface the catalog
+    # pages (gpu-compute, cpu-instances, object-storage, ai-platform, maas, idp...).
+    "dịch": ("service", "services", "platform", "cloud", "gpu", "storage"),
+    "vụ": ("service", "services", "platform"),
+    "sản": ("product", "platform", "gpu", "cpu", "storage", "kubernetes"),
+    "phẩm": ("product", "products", "platform"),
+    "portfolio": ("product", "platform", "gpu", "cpu", "storage", "kubernetes", "model", "document"),
+    "danh": ("product", "catalog", "list"),
+    "mục": ("product", "catalog"),
+    "nhóm": ("product", "category", "platform"),
+    "tổng": ("overview", "platform", "product"),
+    "quan": ("overview", "platform"),
     # Common English synonyms
     "price": ("pricing", "cost", "rate"),
     "pricing": ("price", "cost", "rate"),
@@ -177,7 +193,7 @@ class BM25Retriever:
         return self
 
     # ── query ────────────────────────────────────────────────────────────────
-    def search(self, query: str, k: int = 5, *, expand: bool = True) -> list[Hit]:
+    def search(self, query: str, k: int = 5, *, expand: bool = True, diversify: bool = False, prefer_price: bool = False) -> list[Hit]:
         base = filter_stopwords(tokenize(query))
         # Original terms get full weight; bilingual/synonym expansions get a
         # down-weight so they boost recall without overpowering exact matches.
@@ -189,11 +205,44 @@ class BM25Retriever:
         for d in self.docs:
             score = self._score(weights, d)
             if score > 0:
+                # Authoritative-source boost: greennode.ai /product/ and /solution/
+                # pages are the canonical catalog; blog/SEO pages (95% of the corpus)
+                # otherwise dominate BM25 on broad "portfolio/overview" queries and
+                # bury the real product pages. Multiply official pages up so the
+                # writer sees the actual product groups, not marketing articles.
+                u = d.url
+                if "/product/" in u or "/solution" in u:
+                    score *= 2.2
+                # Pricing intent: the chunks that actually carry per-hour/per-month
+                # rates ($2.99, /giờ, VND) are dense tables of numbers with few
+                # keywords, so BM25 ranks the wordy /product/h100 marketing page
+                # (no price) above the /pricing rate table. When the question is a
+                # pricing one, boost chunks that contain a real currency-number so
+                # the writer gets actual figures instead of an empty price column.
+                if prefer_price and _PRICE_RE.search(d.text):
+                    score *= 3.0
                 hits.append(
                     Hit(score, d.url, d.title, d.chunk_index, d.text)
                 )
         hits.sort(key=lambda h: h.score, reverse=True)
-        return hits[:k]
+        # Per-URL diversity cap: keep at most MAX_PER_URL chunks from any single
+        # page so a broad "what services" question spreads across distinct product
+        # pages (gpu / cpu / storage / maas / idp...) instead of returning 6 chunks
+        # of the same ai-platform page. Overflow chunks are kept as a tail so we can
+        # still backfill to k when the corpus lacks enough distinct sources.
+        # diversify=True (broad "what services/portfolio" questions) caps each page
+        # to 1 chunk so the top-k spreads across ALL product pages; otherwise 2.
+        MAX_PER_URL = 1 if diversify else 2
+        per: Counter[str] = Counter()
+        primary: list[Hit] = []
+        overflow: list[Hit] = []
+        for h in hits:
+            if per[h.url] < MAX_PER_URL:
+                per[h.url] += 1
+                primary.append(h)
+            else:
+                overflow.append(h)
+        return (primary + overflow)[:k]
 
     def _score(self, q_weights: dict[str, float], d: Doc) -> float:
         if not d.tokens:
@@ -213,21 +262,35 @@ class BM25Retriever:
 
 # ── loading ──────────────────────────────────────────────────────────────────
 def load_chunks(jsonl_path: str | Path) -> list[Doc]:
+    # Dedupe on (url, normalised-text). The corpus carries ~700 exact-duplicate
+    # chunks (26% of 2716); without this the BM25 top-k returns the SAME chunk
+    # twice, wasting evidence slots and starving the writer of distinct product
+    # groups on broad "portfolio/overview" questions.
     docs: list[Doc] = []
+    seen: set[tuple[str, str]] = set()
+    dropped = 0
     with Path(jsonl_path).open(encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:
                 continue
             r = json.loads(line)
+            text = r["text"]
+            key = (r["url"], " ".join(text.split()))
+            if key in seen:
+                dropped += 1
+                continue
+            seen.add(key)
             docs.append(
                 Doc(
                     url=r["url"],
                     title=r.get("title", ""),
                     chunk_index=r.get("chunk_index", 0),
-                    text=r["text"],
+                    text=text,
                 )
             )
+    if dropped:
+        print(f"[retrieve] deduped {dropped} duplicate chunks -> {len(docs)} unique")
     return docs
 
 

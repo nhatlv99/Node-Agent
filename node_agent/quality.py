@@ -192,6 +192,15 @@ def sanitize_for_enterprise(answer: str, sources: list) -> str:
     for i, link in enumerate(md_links):
         text = text.replace(f"\x00MDLINK{i}\x00", link)
 
+    # Strip fabricated hotlines/phone numbers. The KB has NO official phone number
+    # (only email info@greennode.vn), so any VN-style hotline the model emits is
+    # invented. Replace the whole "Hotline ... <number>" mention with the email.
+    text = re.sub(
+        r"(?:hotline|hỗ trợ|liên hệ|gọi)[^.\n]{0,30}?(?:\+?84[\s.\-]?)?(?:1900|0\d{2,3})[\s.\-]?\d[\d\s.\-]{4,}",
+        "liên hệ email info@greennode.vn", text, flags=re.IGNORECASE)
+    # any leftover bare VN hotline token → drop to the email
+    text = re.sub(r"(?:\+?84[\s.\-]?)?1900[\s.\-]?\d[\d\s.\-]{3,}", "info@greennode.vn", text)
+
     # tidy: collapse the double spaces emoji removal leaves mid-sentence, plus
     # trailing spaces + 3+ newlines.
     text = re.sub(r"[ \t]{2,}", " ", text)

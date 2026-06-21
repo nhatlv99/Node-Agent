@@ -79,3 +79,38 @@ def resolve(role: str) -> Seat:
 def seat_map() -> dict[str, Seat]:
     """Return {role: Seat} for all logical roles."""
     return {r: resolve(r) for r in ROLES}
+
+
+# Production target models per role — what the deploy SHOULD be running.
+# Used by the dashboard /api/roles panel to show prod vs actual wiring.
+PROD_TARGETS = dict(_DEFAULTS)
+
+
+@dataclass(frozen=True)
+class RoleMapping:
+    model: str
+    source: str  # "env" (role-specific), "single" (NODE_AGENT_MODEL), or "default"
+
+
+def current_mapping() -> dict[str, RoleMapping]:
+    """Resolve each role to its model AND report WHERE the value came from.
+
+    Mirrors resolve() precedence so the dashboard can show whether a seat is
+    wired via its role env var, the single-model fallback, or the hardcoded
+    production default.
+    """
+    out: dict[str, RoleMapping] = {}
+    for role in ROLES:
+        src = "default"
+        model = _DEFAULTS.get(role, "")
+        for env_name in _ENV_MAP.get(role, ()):
+            v = os.environ.get(env_name, "").strip()
+            if v:
+                model, src = v, "env"
+                break
+        if src == "default":
+            v = os.environ.get("NODE_AGENT_MODEL", "").strip()
+            if v:
+                model, src = v, "single"
+        out[role] = RoleMapping(model=model, source=src)
+    return out

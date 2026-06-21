@@ -75,6 +75,8 @@ def main() -> None:
     ap.add_argument("--model", default="google/gemma-4-31b-it")
     ap.add_argument("--token", default="demo-key-change-me")
     ap.add_argument("--no-llm", action="store_true", help="serve retrieve-only")
+    ap.add_argument("--single-model", action="store_true",
+                    help="Route ALL three seats to --model (demo/cheap). Default: 3 prod MaaS seats.")
     args = ap.parse_args()
 
     _load_dotenv(Path(__file__).resolve().parent)
@@ -86,6 +88,21 @@ def main() -> None:
         os.environ["NODE_AGENT_BASE_URL"] = MAAS_BASE_URL
         os.environ["NODE_AGENT_API_KEY"] = key
         os.environ["NODE_AGENT_MODEL"] = args.model
+        # Wire the THREE production seats (qwen orchestrator / minimax thinker /
+        # gemma writer). Without this, roles.resolve() falls back to the single
+        # NODE_AGENT_MODEL for every seat -> 100% of traffic hits one model.
+        # Respect any seat env already exported; only fill the gaps.
+        from node_agent import roles as _R
+        if not args.single_model:
+            for _role in _R.ROLES:
+                _envname = _R._ENV_MAP[_role][0]
+                if not os.environ.get(_envname, "").strip():
+                    os.environ[_envname] = _R._DEFAULTS[_role]
+            _seats = {r: _R.resolve(r).model for r in _R.ROLES}
+            print(f"[serve] seats orchestrator={_seats['orchestrator']} "
+                  f"thinker={_seats['thinker']} writer={_seats['writer']}")
+        else:
+            print(f"[serve] single-model mode: all seats -> {args.model}")
         print(f"[serve] MaaS {MAAS_BASE_URL}")
         print(f"[serve] model {args.model}")
     else:
